@@ -1,20 +1,33 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Raksh
 
-# Run and deploy your AI Studio app
+Healthcare is transactional. Raksh is not.
 
-This contains everything you need to run your app locally.
+Most health apps treat users as patients — passive recipients of reminders and data entry forms. Raksh is built on a different premise: people managing chronic conditions are not defined by their diagnosis. They are navigating life, quietly, every day.
 
-View your app in AI Studio: https://ai.studio/apps/07e5cc06-55c4-455f-87c4-8d61256b3501
+---
 
-## Run Locally
+## Philosophy
 
-**Prerequisites:**  Node.js
+**Calm over noise.**  
+Chronic illness is already loud. The interface should whisper.
 
+**Continuity over episodes.**  
+A single HbA1c reading means nothing. A six-month arc means everything. Raksh is built around longitudinal context, not isolated events.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**Trust through restraint.**  
+Every pixel that isn't there is a decision. We don't show data unless it earns its place. Dense UIs create anxiety; Raksh creates clarity.
+
+**Dignity by default.**  
+The user is Eva, not "Patient #4821." Language, tone, and hierarchy all reflect this. Medical facts are presented without clinical coldness.
+
+**Privacy as architecture.**  
+The Hidden Vault isn't a feature. It's a statement: sensitive records belong to the person who created them, and accessing them should feel deliberate.
+
+---
+
+## Running locally
+
+```bash
+npm install
+npm run dev
+```

@@ -1,5 +1,4 @@
 {
-  "name": "Remix: Raksh: eva",
-  "description": "A personalized wellness and health tracking application with a modern, glassmorphic interface.",
-  "requestFramePermissions": []
+  "name": "Raksh",
+  "description": "A patient-first health companion for people managing chronic conditions."
 }

@@ -1,16 +1,9 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { Search, Plus, Home, HeartPulse, Pill, Shield, Bell, Info, TrendingUp, Activity, Baby, Droplets, Calendar, ChevronRight, Clock, CheckCircle2, AlertCircle, CalendarDays, Upload, Scan, Lock, FileText, Folder, MoreVertical, ArrowUpRight, AlertTriangle, Stethoscope, Microscope, X, Share2, Moon, Sun, LogOut, Settings, User } from 'lucide-react';
+import { Search, Plus, Home, HeartPulse, Pill, Shield, Bell, Info, TrendingUp, Activity, Calendar, ChevronRight, Clock, CheckCircle2, AlertCircle, CalendarDays, Upload, Scan, Lock, FileText, Folder, MoreVertical, ArrowUpRight, AlertTriangle, Stethoscope, Microscope, X, Share2, Moon, Sun, LogOut, Settings, User } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion, LayoutGroup } from 'motion/react';
-import { useState, useEffect } from 'react';
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { useState } from 'react';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
-// Global Animation Constants
 const EASE_OUT_QUAD = [0.25, 0.46, 0.45, 0.94];
-const POND_EASE = [0.22, 1, 0.36, 1];
 const DEFAULT_SPRING = { stiffness: 280, damping: 24, mass: 0.8 };
 const NAV_SPRING = { stiffness: 400, damping: 18 };
 const NOTIF_SPRING = { stiffness: 320, damping: 26 };
@@ -34,7 +27,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showUploadSuccess, setShowUploadSuccess] = useState(false);
 
-  // Staggered Entrance Variants
+
   const listContainerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -179,14 +172,10 @@ export default function App() {
 
   return (
     <div className={`relative min-h-screen w-full overflow-hidden flex items-center justify-center p-0 sm:p-4 transition-colors duration-500 ${isDarkMode ? 'bg-dark-maroon dark' : 'bg-white'}`}>
-      {/* Ambient Background Glows */}
       <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] blur-[120px] rounded-full pointer-events-none transition-opacity duration-500 ${isDarkMode ? 'bg-maroon/10 opacity-100' : 'bg-maroon/5 opacity-100'}`} />
       <div className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] blur-[120px] rounded-full pointer-events-none transition-opacity duration-500 ${isDarkMode ? 'bg-maroon/10 opacity-100' : 'bg-maroon/5 opacity-100'}`} />
 
-      {/* Mobile Frame Container */}
       <div className={`relative z-10 w-full max-w-[430px] h-full sm:h-[850px] overflow-hidden flex flex-col transition-all duration-500 sm:rounded-[3.5rem] ${isDarkMode ? 'bg-white/[0.02] backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.8)] border-white/[0.05]' : 'bg-white shadow-[0_0_100px_rgba(0,0,0,0.05)] border-black/[0.03]'}`}>
-        
-        {/* Header */}
         <header className="px-6 pt-10 pb-4 flex items-center justify-between z-40 bg-transparent sticky top-0">
           <div className="flex items-center gap-3">
             <div 
@@ -207,7 +196,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Profile Dropdown Menu */}
+
             <AnimatePresence>
               {isProfileMenuOpen && (
                 <>
@@ -246,7 +235,7 @@ export default function App() {
                         <span className="text-sm font-medium">Settings</span>
                       </button>
                       
-                      {/* Dark Mode Toggle */}
+
                       <div className={`flex items-center justify-between px-4 py-3 rounded-2xl transition-colors ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}>
                         <div className="flex items-center gap-3">
                           {isDarkMode ? <Moon className="w-4 h-4 text-maroon" /> : <Sun className="w-4 h-4 text-maroon" />}
@@ -291,7 +280,7 @@ export default function App() {
                 <div className={`absolute top-3 right-3 w-2 h-2 bg-maroon rounded-full border-2 shadow-[0_0_10px_rgba(192,32,62,0.3)] ${isDarkMode ? 'border-dark-maroon' : 'border-white'}`} />
               </button>
 
-              {/* Notifications Dropdown */}
+
               <AnimatePresence>
                 {isNotificationsOpen && (
                   <motion.div
@@ -352,7 +341,7 @@ export default function App() {
           </div>
         </header>
 
-        {/* Pond Puddle Search Overlay */}
+
         <AnimatePresence>
           {isSearchOpen && (
             <motion.div
@@ -362,7 +351,7 @@ export default function App() {
               transition={{ duration: 0.3 }}
               className="absolute inset-0 z-[100] flex items-start justify-center pt-10 px-6"
             >
-              {/* Backdrop Ripple (Pond Puddle Effect) Removed */}
+
               <div className={`absolute inset-0 pointer-events-none ${isDarkMode ? 'bg-dark-maroon' : 'bg-white'}`} />
               
               <motion.div
@@ -396,7 +385,7 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Search Results Preview */}
+
                 <motion.div
                   initial="hidden"
                   animate="visible"
@@ -429,7 +418,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Main Content Area */}
+
         <main className="flex-1 px-8 overflow-y-auto no-scrollbar pb-32">
           <AnimatePresence mode="wait">
             {activeTab === 'home' ? (
@@ -449,7 +438,7 @@ export default function App() {
                   </h1>
                 </div>
 
-                {/* Condition Section */}
+
                 <div className="mt-8 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className={`text-lg font-medium ${isDarkMode ? 'text-white' : 'text-black'}`}>Your condition</span>
@@ -471,7 +460,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Main Stats Card */}
+
                 <motion.div 
                   key={homeViewMode}
                   initial={{ opacity: 0, y: 20 }}
@@ -540,7 +529,7 @@ export default function App() {
                   )}
                 </motion.div>
 
-                {/* Action Cards Grid */}
+
                 <motion.div 
                   variants={listContainerVariants}
                   initial="hidden"
@@ -588,7 +577,7 @@ export default function App() {
                   <h1 className={`text-2xl font-medium tracking-tight transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>Vitals</h1>
                 </div>
 
-                {/* Condition Chips (Horizontally Scrollable) */}
+
                 <div className="mt-8">
                   <div className="flex items-center justify-between ml-1 mb-4">
                     <span className="text-caption">Active Conditions</span>
@@ -606,7 +595,7 @@ export default function App() {
                             : (isDarkMode ? 'bg-white/5 text-white/40 border-white/5 hover:bg-white/10' : 'bg-black/5 text-black/40 border-black/5 hover:bg-black/10')
                         }`}
                       >
-                        {/* Background Fill Animation */}
+
                         <AnimatePresence>
                           {selectedVitalsCondition === cond.id && (
                             <motion.div
@@ -630,7 +619,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Daily Logs Section */}
+
                 <div className="mt-10">
                   <div className="flex items-center justify-between mb-6 px-1">
                     <div className="flex items-center gap-2">
@@ -676,7 +665,7 @@ export default function App() {
                     ))}
                   </motion.div>
 
-                  {/* Add New Log Button */}
+
                   <motion.button 
                     whileHover={{ scale: 1.02, backgroundColor: isDarkMode ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}
                     whileTap={{ scale: 0.98 }}
@@ -687,7 +676,7 @@ export default function App() {
                   </motion.button>
                 </div>
 
-                {/* Report Trends */}
+
                 <div className="mt-10">
                   <div className="flex items-center justify-between mb-6 px-1">
                     <div className="flex items-center gap-2">
@@ -727,7 +716,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Upcoming Doctor Visit */}
+
                 <div className="mt-10 pb-24">
                   <div className="flex items-center gap-2 ml-1 mb-6">
                     <Calendar className="w-5 h-5 text-maroon" />
@@ -774,7 +763,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Calendar Day Selector */}
+
                 <div className="mt-8">
                   <div className="flex items-center justify-between ml-1 mb-4">
                     <span className="text-caption">October 2025</span>
@@ -810,7 +799,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Daily Progress Bar */}
+
                 <div className="mt-8">
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-sm font-medium transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>Today's Progress</span>
@@ -828,7 +817,7 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* To Take Section */}
+
                 <div className="mt-10">
                   <div className="flex items-center justify-between ml-1 mb-6">
                     <span className={`text-xl font-medium transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>To take</span>
@@ -891,7 +880,7 @@ export default function App() {
                   </motion.div>
                 </div>
 
-                {/* Refill Reminders */}
+
                 <div className="mt-10">
                   <div className="flex items-center gap-2 ml-1 mb-6">
                     <AlertCircle className="w-5 h-5 text-maroon" />
@@ -917,7 +906,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Upcoming Doctor Visit */}
+
                 <div className="mt-10">
                   <div className="flex items-center gap-2 ml-1 mb-6">
                     <Calendar className="w-5 h-5 text-maroon" />
@@ -956,7 +945,7 @@ export default function App() {
                 transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                 className="flex flex-col pb-32"
               >
-                {/* MedVault Header */}
+
                 <div className="mt-8 flex items-center justify-between px-1">
                   <h1 className={`text-2xl font-medium tracking-tight transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>MedVault</h1>
                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${isDarkMode ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'}`}>
@@ -965,7 +954,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Full-width Upload Bar */}
+
                 <div className="mt-8 flex gap-3">
                   <button className={`flex-1 h-16 rounded-[2rem] border flex items-center justify-center gap-3 transition-all active:scale-[0.98] group ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-black/5 border-black/5 hover:bg-black/10'}`}>
                     <div className="w-10 h-10 bg-maroon/10 rounded-full flex items-center justify-center border border-maroon/20 group-hover:scale-110 transition-transform">
@@ -981,7 +970,7 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Category 2x2 Grid */}
+
                 <div className="mt-8 grid grid-cols-2 gap-4">
                   {vaultCategories.map((cat) => (
                     <motion.div 
@@ -1008,7 +997,7 @@ export default function App() {
                   ))}
                 </div>
 
-                {/* Hidden Vault Entry */}
+
                 <div className="mt-8">
                   <motion.div 
                     whileHover={{ scale: 1.01, boxShadow: "0 20px 40px rgba(192,32,62,0.1)" }}
@@ -1031,7 +1020,7 @@ export default function App() {
                   </motion.div>
                 </div>
 
-                {/* Condition Filter Strip */}
+
                 <div className="mt-10">
                   <div className="flex items-center justify-between ml-1 mb-4">
                     <span className="text-caption">Filter by condition</span>
@@ -1058,7 +1047,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Recent Records */}
+
                 <div className="mt-8">
                   <div className="flex items-center justify-between ml-1 mb-6">
                     <span className={`text-xl font-medium transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}>Recent Records</span>
@@ -1145,7 +1134,7 @@ export default function App() {
           </AnimatePresence>
         </main>
 
-        {/* Floating Bottom Navigation */}
+
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] z-50">
           <LayoutGroup>
             <nav className={`glass-panel pill-nav-glass px-6 py-3 flex items-center justify-between relative border transition-all shadow-2xl ${isDarkMode ? 'border-white/10 shadow-black/50' : 'border-black/5 shadow-black/10'}`}>
@@ -1186,7 +1175,7 @@ export default function App() {
           </LayoutGroup>
         </div>
 
-        {/* Upload Confirmation Overlay */}
+
         <AnimatePresence>
           {showUploadSuccess && (
             <motion.div 
@@ -1196,7 +1185,7 @@ export default function App() {
               className={`absolute inset-0 z-[200] flex items-center justify-center p-8 transition-colors ${isDarkMode ? 'bg-dark-maroon' : 'bg-white'}`}
             >
               <div className="relative w-full max-w-sm flex flex-col items-center">
-                {/* Soft Circular Bloom */}
+
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: [0, 0.2, 0] }}
@@ -1249,7 +1238,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Vault Authentication Overlay */}
+
         <AnimatePresence>
           {showVaultAuth && (
             <motion.div 
@@ -1268,7 +1257,7 @@ export default function App() {
                   <p className={`text-sm font-bold mt-1 uppercase tracking-wider transition-colors ${isDarkMode ? 'text-white/40' : 'text-black/40'}`}>Enter your 4-digit PIN</p>
                 </div>
 
-                {/* PIN Display */}
+
                 <div className="flex gap-4 mt-4">
                   {[0, 1, 2, 3].map((i) => (
                     <motion.div 
@@ -1284,7 +1273,7 @@ export default function App() {
                   ))}
                 </div>
 
-                {/* Number Pad */}
+
                 <div className="grid grid-cols-3 gap-6 mt-8 w-full">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                     <motion.button
@@ -1320,7 +1309,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Pre-visit Summary Overlay */}
+
         <AnimatePresence>
           {showPreVisitSummary && (
             <motion.div 
@@ -1396,7 +1385,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Unlocked Hidden Vault View */}
+
         <AnimatePresence>
           {isVaultUnlocked && (
             <motion.div 
@@ -1454,7 +1443,7 @@ export default function App() {
                     ))}
                   </div>
 
-                  {/* Empty State for Hidden Vault */}
+
                   <div className={`mt-12 p-8 glass-card border-dashed border-2 flex flex-col items-center text-center gap-4 bg-transparent shadow-none transition-colors ${isDarkMode ? 'border-white/5' : 'border-black/5'}`}>
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center border transition-colors ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
                       <Plus className={`w-8 h-8 ${isDarkMode ? 'text-white/20' : 'text-black/20'}`} />
