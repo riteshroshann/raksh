@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-maroon: #C0203E;
+  --color-dark-maroon: #0D0305;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-black/90 bg-white selection:bg-maroon/10 transition-colors duration-500;
+  }
+  .dark body {
+    @apply text-white bg-dark-maroon;
+  }
+}
+
+@layer utilities {
+  /* Premium Glassmorphism Aesthetic - Light Theme */
+  .glass-card {
+    @apply bg-white border border-black/[0.05] rounded-[2.5rem] transition-all duration-500;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .glass-card {
+    @apply bg-[#1A1C1E] border-white/[0.1];
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-panel {
+    @apply bg-white border-t border-l border-black/[0.03] rounded-[3rem];
+  }
+
+  .dark .glass-panel {
+    @apply bg-[#1A1C1E] border-white/[0.05];
+  }
+  
+  .pill-nav-glass {
+    @apply bg-white border border-black/[0.05] shadow-xl rounded-full;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .pill-nav-glass {
+    @apply bg-[#1A1C1E] border-white/[0.1] shadow-2xl;
+    box-shadow: 0 0 40px rgba(192, 32, 62, 0.1);
+  }
+
+  /* Ambient Glows */
+  .maroon-glow {
+    @apply relative;
+  }
+  .maroon-glow::after {
+    content: '';
+    @apply absolute -z-10 inset-0 blur-[60px] opacity-10 bg-maroon rounded-full pointer-events-none;
+  }
+
+  /* High-Legibility Typography - Light Theme */
+  .text-display {
+    @apply tracking-[-0.04em] font-light text-black leading-[1.1];
+  }
+  .dark .text-display {
+    @apply text-white;
+  }
+
+  .text-caption {
+    @apply text-[10px] uppercase tracking-[0.2em] font-semibold text-black/40;
+  }
+  .dark .text-caption {
+    @apply text-white/40;
+  }
+
+  .text-body {
+    @apply text-[15px] leading-relaxed text-black/60 font-light;
+  }
+  .dark .text-body {
+    @apply text-white/60;
+  }
+
+  .text-title {
+    @apply text-xl font-medium text-black;
+  }
+  .dark .text-title {
+    @apply text-white;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent;
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+}
