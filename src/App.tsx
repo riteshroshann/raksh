@@ -40,7 +40,7 @@ class ErrorBoundary extends Component<any, any> {
         </div>
       );
     }
-    return this.props.children;
+    return (this.props as any).children;
   }
 }
 
