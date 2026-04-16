@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Home, HeartPulse, Pill, Shield, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
