@@ -15,7 +15,6 @@ import Onboarding from './pages/Onboarding';
 import Dashboard  from './pages/Dashboard';
 import Vitals     from './pages/Vitals';
 import Medicines  from './pages/Medicines';
-import Vault      from './pages/Vault';
 import Profile    from './pages/Profile';
 
 class ErrorBoundary extends Component<any, any> {
@@ -85,7 +84,6 @@ function AppRoutes() {
           <Route path="/home"      element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
           <Route path="/vitals"    element={<ErrorBoundary><Vitals /></ErrorBoundary>} />
           <Route path="/medicines" element={<ErrorBoundary><Medicines /></ErrorBoundary>} />
-          <Route path="/vault"     element={<ErrorBoundary><Vault /></ErrorBoundary>} />
           <Route path="/profile"   element={<ErrorBoundary><Profile /></ErrorBoundary>} />
         </Route>
       </Route>
