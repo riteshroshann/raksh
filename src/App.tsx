@@ -18,8 +18,9 @@ import Medicines  from './pages/Medicines';
 import Vault      from './pages/Vault';
 import Profile    from './pages/Profile';
 
+interface EBProps { children: ReactNode }
 interface EBState { error: Error | null }
-class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
+class ErrorBoundary extends Component<EBProps, EBState> {
   state: EBState = { error: null };
   static getDerivedStateFromError(err: Error): EBState { return { error: err }; }
   render() {
