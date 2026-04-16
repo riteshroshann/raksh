@@ -70,8 +70,9 @@ export function useMedicines(
 
     Promise.all([medQuery, logsQuery]).then(([medRes, logRes]) => {
       if (!mounted) return;
-      if (medRes.error) setError(medRes.error.message);
-      else {
+      if (medRes.error) {
+        setError(medRes.error.message);
+      } else {
         setMedicines((medRes.data ?? []) as Medicine[]);
         setTodayLogs((logRes.data ?? []) as MedicineLog[]);
       }

@@ -1,56 +1,86 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, Plus, Calendar, TrendingUp, Activity, Info, ChevronRight, Sparkles, RefreshCw } from 'lucide-react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { Plus, Calendar, Activity, Sparkles, RefreshCw, HeartPulse, Pill, TrendingUp, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import { useVitals } from '../hooks/useVitals';
 import { useMedicines } from '../hooks/useMedicines';
-import type { Condition } from '../lib/types';
-import { classifyFastingSugar, relativeDay } from '../lib/utils';
 import { generateHealthInsight } from '../lib/gemini';
 
-type HomeView = 'today' | 'months';
+function classifyBG(v: number): string {
+  if (v < 70) return 'low';
+  if (v <= 100) return 'normal';
+  if (v <= 125) return 'elevated';
+  return 'high';
+}
+
+const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  normal:   { bg: '#F0FDF4', text: '#16A34A', label: 'Normal' },
+  elevated: { bg: '#FFFBEB', text: '#D97706', label: 'Elevated' },
+  high:     { bg: '#FEF2F2', text: '#DC2626', label: 'High' },
+  low:      { bg: '#EFF6FF', text: '#2563EB', label: 'Low' },
+};
+
+function StatCard({ label, value, unit, icon: Icon, color }: { label: string; value: string; unit: string; icon: React.ElementType; color: string }) {
+  return (
+    <div className="bg-white rounded-2xl p-5 border border-black/[0.05] flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: color + '18' }}>
+          <Icon size={15} style={{ color }} />
+        </div>
+      </div>
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-3xl font-light text-gray-900 tracking-tight">{value}</span>
+        <span className="text-xs text-gray-400 font-medium">{unit}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const shouldReduceMotion = useReducedMotion();
-  const { user, familyMembers, activeMemberId, setActiveMemberId } = useAppContext();
-  const [homeView, setHomeView] = useState<HomeView>('today');
+  const { user } = useAppContext();
 
-  const userId = user?.id;
+  const userId  = user?.id;
   const profile = user?.profile;
-  const activeMember = familyMembers.find(m => m.id === activeMemberId);
-  const displayName = activeMember?.name ?? profile?.full_name ?? 'there';
-  const firstName = displayName.split(' ')[0];
-  const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
 
-  const { logs: sugarLogs, loading: sugarLoading } = useVitals(userId, 'blood_sugar_fasting', activeMemberId, 1);
-  const { todayDoses } = useMedicines(userId, activeMemberId);
-  const overdue = todayDoses.filter(d => d.status === 'missed').length;
+  const { logs: sugarLogs, loading: sugarLoading } = useVitals(userId, 'blood_sugar_fasting', null, 7);
+  const { logs: bpLogs } = useVitals(userId, 'blood_pressure', null, 1);
+  const { logs: hrLogs } = useVitals(userId, 'heart_rate', null, 1);
+  const { todayDoses, medicines } = useMedicines(userId, null);
 
   const latestSugar = sugarLogs[0];
-  const sugarStatus = latestSugar ? classifyFastingSugar(latestSugar.value_1) : null;
+  const latestBP    = bpLogs[0];
+  const latestHR    = hrLogs[0];
 
-  const [aiInsight, setAiInsight] = useState<string>('');
+  const sugarStatus = latestSugar ? classifyBG(latestSugar.value_1) : null;
+  const statusStyle = sugarStatus ? STATUS_STYLES[sugarStatus] : null;
+
+  const taken  = todayDoses.filter(d => d.status === 'taken').length;
+  const total  = todayDoses.length;
+  const pending = todayDoses.filter(d => d.status === 'pending');
+
+  const [aiInsight, setAiInsight] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState(false);
+  const [aiError,   setAiError]   = useState(false);
 
   const fetchInsight = useCallback(async () => {
     if (!latestSugar || !sugarStatus) return;
     setAiLoading(true);
     setAiError(false);
     try {
-      const insight = await generateHealthInsight({
+      const text = await generateHealthInsight({
         condition: profile?.conditions?.[0] ?? 'general health',
         vitalLabel: 'Fasting Blood Sugar',
         value: latestSugar.value_1,
         unit: 'mg/dL',
         status: sugarStatus,
       });
-      setAiInsight(insight);
+      setAiInsight(text);
     } catch {
       setAiError(true);
-      setAiInsight('');
     } finally {
       setAiLoading(false);
     }
@@ -60,197 +90,205 @@ export default function Dashboard() {
     if (latestSugar && !aiInsight && !aiLoading) fetchInsight();
   }, [latestSugar]);
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
   return (
-    <div className="flex flex-col min-h-full bg-white">
+    <div className="p-5 lg:p-8 max-w-7xl mx-auto">
 
-      <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setActiveMemberId(null)}
-            className="w-10 h-10 rounded-full border border-black/[0.05] shadow-sm hover:scale-105 active:scale-95 transition-all"
-            style={{ background: '#C0203E' }}
-          >
-            <span className="flex items-center justify-center h-full text-white text-sm font-semibold">{initials}</span>
-          </button>
-          <div>
-            <span className="text-lg font-light text-black">Hi, {firstName}</span>
-            <span className="text-lg ml-1">✨</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03] hover:bg-black/[0.06] transition-colors">
-            <Search size={18} className="text-black/50" />
-          </button>
-          <div className="relative">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03] hover:bg-black/[0.06] transition-colors">
-              <Bell size={18} className="text-black/50" />
-              {overdue > 0 && (
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#C0203E] border-2 border-white" />
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
+      <div className="mb-8">
+        <p className="text-sm text-gray-400 font-medium">{greeting}</p>
+        <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mt-0.5">
+          {firstName}, here's your health overview
+        </h1>
+      </div>
 
-      <main className="flex-1 px-6 pb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
 
-        <div className="mt-4 mb-6 maroon-glow relative">
-          <span className="text-caption">Daily report</span>
-          <h1 className="text-display text-4xl leading-tight mt-2">
-            Rise and shine,<br />
-            {firstName}! How do<br />
-            you feel today?
-          </h1>
-        </div>
+        <div className="lg:col-span-2 space-y-5">
 
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base font-medium text-black">Your condition</span>
-            <Info size={14} className="text-black/20" />
-          </div>
-          <div className="flex items-center gap-1 p-1 rounded-2xl bg-black/[0.03] border border-black/[0.03]">
-            {(['today', 'months'] as HomeView[]).map(v => (
+          <div className="bg-white rounded-3xl border border-black/[0.05] p-6 lg:p-7">
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Fasting Blood Sugar</p>
+                <div className="flex items-baseline gap-2 mt-2">
+                  {sugarLoading ? (
+                    <div className="h-10 w-28 bg-gray-100 rounded-xl animate-pulse" />
+                  ) : latestSugar ? (
+                    <>
+                      <span className="text-5xl font-light text-gray-900 tracking-tight">{latestSugar.value_1}</span>
+                      <span className="text-sm text-gray-400 font-medium">mg/dL</span>
+                      {statusStyle && (
+                        <span className="ml-2 text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: statusStyle.bg, color: statusStyle.text }}>
+                          {statusStyle.label}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-2xl text-gray-300 font-light">No readings yet</span>
+                  )}
+                </div>
+              </div>
               <button
-                key={v}
-                onClick={() => setHomeView(v)}
-                className="px-3 py-1 rounded-xl text-xs font-bold transition-all capitalize"
-                style={{
-                  background: homeView === v ? 'white' : 'transparent',
-                  color: homeView === v ? '#111827' : 'rgba(0,0,0,0.3)',
-                  boxShadow: homeView === v ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                }}
+                onClick={() => navigate('/vitals')}
+                className="flex items-center gap-1.5 text-xs font-semibold text-[#C0203E] hover:underline"
               >
-                {v}
+                View all <ChevronRight size={14} />
               </button>
-            ))}
-          </div>
-        </div>
-
-        <motion.div
-          key={homeView}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          whileHover={shouldReduceMotion ? {} : { y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.07)' }}
-          whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}
-          className="glass-card p-7 flex flex-col gap-5 cursor-pointer mb-5 border border-black/[0.05]"
-          onClick={() => navigate('/vitals')}
-        >
-          <div className="flex items-baseline gap-2">
-            {sugarLoading ? (
-              <div className="skeleton h-16 w-32 rounded-2xl" />
-            ) : (
-              <>
-                <span className="text-7xl font-light tracking-[-0.04em] leading-none text-black">
-                  {latestSugar ? latestSugar.value_1 : '--'}
-                </span>
-                <span className="text-xs font-bold uppercase tracking-widest text-black/30">mg/dL</span>
-              </>
-            )}
-          </div>
-
-          <div className="h-px w-full bg-black/5" />
-
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-black">Diabetes Control</span>
-              <div className="w-9 h-9 bg-[#C0203E]/10 rounded-[1rem] flex items-center justify-center border border-[#C0203E]/20">
-                <Activity size={16} className="text-[#C0203E]" />
-              </div>
             </div>
 
-            <AnimatePresence mode="wait">
-              {aiLoading ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-2 mt-1"
-                >
-                  <div className="w-4 h-4 rounded-full border-2 border-[#C0203E] border-t-transparent animate-spin shrink-0" />
-                  <span className="text-xs text-black/30 font-light">Raksh AI is thinking…</span>
-                </motion.div>
-              ) : aiInsight ? (
-                <motion.div
-                  key="insight"
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="mt-1"
-                >
-                  <div className="flex items-start gap-2">
-                    <Sparkles size={13} className="text-[#C0203E] shrink-0 mt-0.5" />
-                    <p className="text-sm text-black/50 leading-relaxed font-light">{aiInsight}</p>
-                  </div>
-                  <button
-                    onClick={e => { e.stopPropagation(); fetchInsight(); }}
-                    className="flex items-center gap-1 mt-2 text-[10px] font-bold uppercase tracking-widest text-black/20 hover:text-[#C0203E] transition-colors"
-                  >
-                    <RefreshCw size={10} />
-                    Refresh insight
+            <div className="border-t border-gray-50 pt-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles size={14} className="text-[#C0203E]" />
+                <span className="text-xs font-bold text-[#C0203E] uppercase tracking-wider">Raksh AI Insight</span>
+                {(aiInsight || aiLoading) && (
+                  <button onClick={fetchInsight} className="ml-auto text-gray-300 hover:text-gray-500 transition-colors">
+                    <RefreshCw size={12} />
                   </button>
-                </motion.div>
-              ) : aiError ? (
-                <motion.p key="error" className="text-sm text-black/30 font-light mt-1 italic">
-                  AI insights unavailable right now.
-                </motion.p>
-              ) : (
-                <motion.p key="fallback" className="text-sm text-black/40 font-light leading-relaxed mt-1">
-                  {latestSugar
-                    ? 'Log your symptoms or medicines to unlock daily AI insights.'
-                    : 'Log your first fasting sugar reading to see your Diabetes Control status.'}
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            {latestSugar && (
-              <span className="text-[10px] font-bold text-black/20 uppercase tracking-wider mt-1">
-                Last logged {relativeDay(latestSugar.logged_at)}
-              </span>
-            )}
+                )}
+              </div>
+              <AnimatePresence mode="wait">
+                {aiLoading ? (
+                  <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 rounded-full border-2 border-[#C0203E] border-t-transparent animate-spin" />
+                    <span className="text-sm text-gray-400">Analyzing your readings…</span>
+                  </motion.div>
+                ) : aiInsight ? (
+                  <motion.p key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-gray-600 leading-relaxed">
+                    {aiInsight}
+                  </motion.p>
+                ) : aiError ? (
+                  <motion.p key="error" className="text-sm text-gray-400 italic">AI insights unavailable right now.</motion.p>
+                ) : (
+                  <motion.p key="empty" className="text-sm text-gray-400">
+                    {latestSugar ? 'Generating insight…' : 'Log your first vital reading to unlock AI-powered health insights.'}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </motion.div>
 
-        {(aiInsight || aiLoading) && (
-          <div className="flex items-center gap-1.5 mb-5 px-1">
-            <Sparkles size={11} className="text-[#C0203E]" />
-            <span className="text-[10px] font-bold text-[#C0203E] uppercase tracking-widest">Powered by Raksh AI</span>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <StatCard
+              label="Blood Pressure"
+              value={latestBP ? `${latestBP.value_1}/${latestBP.value_2}` : '--/--'}
+              unit="mmHg"
+              icon={HeartPulse}
+              color="#C0203E"
+            />
+            <StatCard
+              label="Heart Rate"
+              value={latestHR ? String(latestHR.value_1) : '--'}
+              unit="bpm"
+              icon={Activity}
+              color="#7C3AED"
+            />
+            <StatCard
+              label="Medicines"
+              value={`${taken}/${total}`}
+              unit="taken today"
+              icon={Pill}
+              color="#0D9488"
+            />
           </div>
-        )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <motion.button
-            whileHover={shouldReduceMotion ? {} : { y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.06)' }}
-            whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}
-            className="glass-card p-6 flex flex-col justify-between text-left border border-black/[0.05]"
-            style={{ aspectRatio: '1' }}
-            onClick={() => navigate('/vitals')}
-          >
-            <span className="text-base font-medium leading-snug text-black">Add your<br />symptoms</span>
-            <div className="flex justify-end">
-              <div className="w-11 h-11 bg-[#C0203E]/10 text-[#C0203E] rounded-2xl flex items-center justify-center border border-[#C0203E]/20 active:scale-90 transition-transform">
-                <Plus size={22} />
+          {sugarLogs.length > 1 && (
+            <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Last 7 Readings</p>
+              <div className="flex items-end gap-2 h-20">
+                {sugarLogs.slice(0, 7).reverse().map((log, i) => {
+                  const st = STATUS_STYLES[classifyBG(log.value_1)];
+                  const max = Math.max(...sugarLogs.map(l => l.value_1));
+                  const pct = Math.max(0.15, log.value_1 / max);
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <span className="text-[9px] text-gray-400">{log.value_1}</span>
+                      <div
+                        className="w-full rounded-t-lg transition-all"
+                        style={{ height: `${pct * 56}px`, background: st.text + '33', borderTop: `2px solid ${st.text}` }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </motion.button>
-
-          <motion.button
-            whileHover={shouldReduceMotion ? {} : { y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.06)' }}
-            whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}
-            className="glass-card p-6 flex flex-col justify-between text-left border border-black/[0.05]"
-            style={{ aspectRatio: '1' }}
-          >
-            <span className="text-base font-medium leading-snug text-black">Make an<br />appointment</span>
-            <div className="flex justify-end">
-              <div className="w-11 h-11 bg-black/5 text-black/50 rounded-2xl flex items-center justify-center border border-black/10 active:scale-90 transition-transform">
-                <Calendar size={20} />
-              </div>
-            </div>
-          </motion.button>
+          )}
         </div>
 
-      </main>
+        <div className="space-y-5">
+
+          {pending.length > 0 && (
+            <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Due Now</p>
+              <div className="space-y-3">
+                {pending.slice(0, 4).map((dose, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Pill size={14} className="text-amber-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{dose.medicine.name}</p>
+                      <p className="text-xs text-gray-400">{dose.medicine.dosage} · {dose.slot}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => navigate('/medicines')}
+                className="mt-4 w-full text-center text-xs font-semibold text-[#C0203E] hover:underline"
+              >
+                View all medicines →
+              </button>
+            </div>
+          )}
+
+          <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Quick Actions</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => navigate('/vitals')}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 hover:bg-[#C0203E]/5 hover:border-[#C0203E]/20 border border-transparent transition-all text-left"
+              >
+                <div className="w-8 h-8 bg-[#C0203E]/10 rounded-xl flex items-center justify-center">
+                  <TrendingUp size={14} className="text-[#C0203E]" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Log a vital reading</span>
+              </button>
+              <button
+                onClick={() => navigate('/medicines')}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 hover:bg-purple-50 border border-transparent hover:border-purple-100 transition-all text-left"
+              >
+                <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center">
+                  <Pill size={14} className="text-purple-500" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Add a medicine</span>
+              </button>
+              <button
+                onClick={() => navigate('/vault')}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 hover:bg-teal-50 border border-transparent hover:border-teal-100 transition-all text-left"
+              >
+                <div className="w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center">
+                  <Calendar size={14} className="text-teal-500" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Upload a report</span>
+              </button>
+            </div>
+          </div>
+
+          {profile?.conditions && profile.conditions.length > 0 && (
+            <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">My Conditions</p>
+              <div className="flex flex-wrap gap-2">
+                {profile.conditions.map(c => (
+                  <span key={c} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#C0203E]/8 text-[#C0203E] border border-[#C0203E]/15">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

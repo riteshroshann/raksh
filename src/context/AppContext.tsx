@@ -10,13 +10,10 @@ import { supabase } from '../lib/supabase';
 import type { AppUser, FamilyMember, Profile } from '../lib/types';
 
 interface AppContextValue {
-  
   user: AppUser | null;
-  
   activeMemberId: string | null;
   setActiveMemberId: (id: string | null) => void;
   familyMembers: FamilyMember[];
-  
   refreshProfile: () => Promise<void>;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -64,7 +61,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase
       .from('family_members')
       .select('*')
-      .eq('owner_id', userId)
+      .eq('user_id', userId)
       .order('created_at');
     if (error) return [];
     return (data ?? []) as FamilyMember[];
