@@ -1,181 +1,179 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Bell, User, Settings, LogOut, Sun, Moon, ChevronRight } from 'lucide-react';
-import { motion, useReducedMotion } from 'motion/react';
+import { User, Shield, Bell, Moon, LogOut, ChevronRight, Plus, Edit2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 import type { Condition } from '../lib/types';
 
-const CONDITION_COLOR: Record<string, string> = {
-  Diabetes:     '#C0203E',
-  Thyroid:      '#7C3AED',
-  Heart:        '#EA580C',
-  Kidney:       '#0D9488',
-  Hypertension: '#1D4ED8',
+const CONDITION_STYLES: Record<string, { bg: string; text: string }> = {
+  Diabetes:     { bg: '#FEF2F2', text: '#C0203E' },
+  Thyroid:      { bg: '#F5F3FF', text: '#7C3AED' },
+  Heart:        { bg: '#FFF7ED', text: '#EA580C' },
+  Kidney:       { bg: '#F0FDFA', text: '#0D9488' },
+  Hypertension: { bg: '#EFF6FF', text: '#1D4ED8' },
 };
 
-function Toggle({ value, onChange }: { value: boolean; onChange: () => void }) {
-  return (
-    <button
-      role="switch"
-      aria-checked={value}
-      onClick={onChange}
-      className="w-11 h-6 rounded-full relative transition-colors duration-300 shrink-0"
-      style={{ background: value ? '#C0203E' : 'rgba(0,0,0,0.1)' }}
-    >
-      <motion.div
-        animate={{ x: value ? 20 : 2 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
-      />
-    </button>
-  );
-}
-
 export default function Profile() {
-  const navigate = useNavigate();
-  const shouldReduce = useReducedMotion();
   const { user, familyMembers, isDarkMode, toggleDarkMode, signOut } = useAppContext();
-  const [notifEnabled, setNotifEnabled] = useState(true);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
   const profile = user?.profile;
-  const initials = profile?.full_name
-    ? profile.full_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
 
-  async function handleSignOut() {
+  const initials = profile?.full_name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() ?? 'R';
+
+  const handleSignOut = async () => {
     await signOut();
-    navigate('/', { replace: true });
-  }
+    navigate('/');
+  };
 
   return (
-    <div className="flex flex-col min-h-full bg-white">
+    <div className="p-5 lg:p-8 max-w-7xl mx-auto">
 
-      <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="w-10 h-10 rounded-full border border-black/[0.05] shadow-sm hover:scale-105 active:scale-95 transition-all overflow-hidden"
-            style={{ background: '#C0203E' }}
-          >
-            <span className="flex items-center justify-center h-full text-white text-sm font-semibold">{initials}</span>
-          </button>
-          <div>
-            <span className="text-lg font-light text-black">Hi, {profile?.full_name?.split(' ')[0] ?? 'there'}</span>
-            <span className="text-lg ml-1">✨</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03]">
-            <Search size={18} className="text-black/50" />
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03]">
-            <Bell size={18} className="text-black/50" />
-          </button>
-        </div>
-      </header>
+      <div className="mb-6">
+        <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900">Profile</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Your account and preferences</p>
+      </div>
 
-      <main className="flex-1 px-6 pb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div className="mt-4 mb-8 flex flex-col items-center text-center">
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-medium text-white border-4 border-white shadow-xl mb-4"
-            style={{ background: 'linear-gradient(135deg, #C0203E 0%, rgba(192,32,62,0.75) 100%)' }}
-          >
-            {initials}
-          </div>
-          <h1 className="text-xl font-medium text-black">{profile?.full_name ?? 'Loading…'}</h1>
-          <p className="text-sm text-black/40 mt-0.5">{user?.email}</p>
-          <span className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold" style={{ background: '#FEF9C3', color: '#92400E' }}>
-            ✦ Premium Member
-          </span>
-        </div>
+        <div className="space-y-5">
 
-        {profile?.conditions && profile.conditions.length > 0 && (
-          <div className="glass-card p-5 mb-4 border border-black/[0.05]">
-            <p className="text-caption mb-3">Conditions</p>
-            <div className="flex flex-wrap gap-2">
-              {profile.conditions.map(c => {
-                const color = CONDITION_COLOR[c] ?? '#6B7280';
-                return (
-                  <span
-                    key={c}
-                    className="px-4 py-1.5 rounded-full text-xs font-bold border"
-                    style={{
-                      background: `${color}15`,
-                      borderColor: `${color}30`,
-                      color,
-                    }}
-                  >
-                    {c}
-                  </span>
-                );
-              })}
+          <div className="bg-white rounded-3xl border border-black/[0.05] p-6 text-center">
+            <div className="w-20 h-20 rounded-full bg-[#C0203E] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#C0203E]/25">
+              <span className="text-white text-2xl font-semibold">{initials}</span>
             </div>
-          </div>
-        )}
+            <h2 className="text-lg font-semibold text-gray-900">{profile?.full_name ?? 'User'}</h2>
+            <p className="text-sm text-gray-400 mt-0.5">{user?.email}</p>
 
-        {familyMembers.length > 0 && (
-          <div className="glass-card p-5 mb-4 border border-black/[0.05]">
-            <p className="text-caption mb-4">Family Members</p>
-            <div className="flex flex-col gap-3">
-              {familyMembers.map(m => (
-                <div key={m.id} className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white shrink-0"
-                    style={{ background: m.color ?? '#C0203E' }}
-                  >
-                    {m.name.charAt(0).toUpperCase()}
+            {profile?.conditions && profile.conditions.length > 0 && (
+              <div className="flex flex-wrap gap-2 justify-center mt-4">
+                {profile.conditions.map((c: Condition) => {
+                  const s = CONDITION_STYLES[c] ?? { bg: '#F3F4F6', text: '#6B7280' };
+                  return (
+                    <span key={c} className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: s.bg, color: s.text }}>
+                      {c}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {familyMembers.length > 0 && (
+            <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Family Members</p>
+              <div className="space-y-3">
+                {familyMembers.map(member => {
+                  const mi = member.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+                  return (
+                    <div key={member.id} className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-semibold"
+                        style={{ background: member.color ?? '#C0203E' }}
+                      >
+                        {mi}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">{member.name}</p>
+                        <p className="text-xs text-gray-400">{member.relation}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-2 space-y-5">
+
+          <div className="bg-white rounded-3xl border border-black/[0.05] overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-50">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preferences</p>
+            </div>
+
+            <div className="divide-y divide-gray-50">
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                    <Moon size={16} className="text-gray-500" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-black">{m.name}</p>
-                    <p className="text-xs text-black/30 capitalize">{m.relation}</p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Dark mode</p>
+                    <p className="text-xs text-gray-400">Switch to dark theme</p>
                   </div>
-                  <ChevronRight size={15} className="text-black/20" />
                 </div>
-              ))}
+                <button
+                  onClick={toggleDarkMode}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${isDarkMode ? 'bg-[#C0203E]' : 'bg-gray-200'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isDarkMode ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-[#C0203E]/10 rounded-xl flex items-center justify-center">
+                    <Bell size={16} className="text-[#C0203E]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Notifications</p>
+                    <p className="text-xs text-gray-400">Medicine reminders and alerts</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-gray-300" />
+              </div>
+
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-teal-50 rounded-xl flex items-center justify-center">
+                    <Shield size={16} className="text-teal-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Privacy & Security</p>
+                    <p className="text-xs text-gray-400">Manage data and permissions</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-gray-300" />
+              </div>
             </div>
           </div>
-        )}
 
-        <div className="glass-card p-5 mb-4 border border-black/[0.05]">
-          <p className="text-caption mb-3">Settings</p>
-          <div className="flex flex-col">
-            
-            <div className="flex items-center justify-between py-3 border-b border-black/5">
-              <div className="flex items-center gap-3">
-                {isDarkMode
-                  ? <Moon size={16} className="text-black/40" />
-                  : <Sun size={16} className="text-black/40" />
-                }
-                <span className="text-sm font-medium text-black">Dark Mode</span>
-              </div>
-              <Toggle value={isDarkMode} onChange={toggleDarkMode} />
+          <div className="bg-white rounded-3xl border border-black/[0.05] overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-50">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account</p>
             </div>
-            
-            <div className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-3">
-                <Bell size={16} className="text-black/40" />
-                <span className="text-sm font-medium text-black">Notifications</span>
+            <div className="divide-y divide-gray-50">
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                    <User size={16} className="text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Email</p>
+                    <p className="text-xs text-gray-400">{user?.email}</p>
+                  </div>
+                </div>
               </div>
-              <Toggle value={notifEnabled} onChange={() => setNotifEnabled(v => !v)} />
+              <div className="px-6 py-4">
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2.5 text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+                >
+                  <LogOut size={16} />
+                  Sign out of Raksh
+                </button>
+              </div>
             </div>
+          </div>
+
+          <div className="bg-[#FEF2F2] rounded-3xl border border-red-100 p-6">
+            <p className="text-xs font-semibold text-[#C0203E] uppercase tracking-wider mb-1">Danger Zone</p>
+            <p className="text-sm text-gray-500 mb-4">Permanently delete your account and all associated health data.</p>
+            <button className="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors">
+              Delete account →
+            </button>
           </div>
         </div>
-
-        <motion.button
-          whileHover={shouldReduce ? {} : { backgroundColor: 'rgba(192,32,62,0.05)' }}
-          whileTap={shouldReduce ? {} : { scale: 0.98 }}
-          onClick={handleSignOut}
-          id="sign-out"
-          className="w-full py-4 rounded-[2rem] border-2 transition-colors flex items-center justify-center gap-2"
-          style={{ borderColor: 'rgba(192,32,62,0.2)', color: '#C0203E' }}
-        >
-          <LogOut size={16} />
-          <span className="text-sm font-semibold">Sign Out</span>
-        </motion.button>
-
-      </main>
+      </div>
     </div>
   );
 }
