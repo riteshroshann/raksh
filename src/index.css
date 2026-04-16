@@ -1,103 +1,244 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-maroon: #C0203E;
-  --color-dark-maroon: #0D0305;
+  --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "DM Serif Display", Georgia, serif;
+
+  --color-primary: #B91C1C;
+  --color-primary-hover: #991B1B;
+  --color-primary-light: #FEF2F2;
+  --color-teal: #0D9488;
+  --color-teal-light: #F0FDFA;
+  --color-success: #16A34A;
+  --color-success-light: #F0FDF4;
+  --color-warning: #D97706;
+  --color-warning-light: #FFFBEB;
+  --color-danger: #DC2626;
+  --color-danger-light: #FEF2F2;
+  --color-info: #2563EB;
+  --color-info-light: #EFF6FF;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-border: #F3F4F6;
+  --color-border-medium: #E5E7EB;
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F9FAFB;
+  --color-surface: #F3F4F6;
+}
+
+:root {
+  --primary: #B91C1C;
+  --primary-light: #FEF2F2;
+  --primary-hover: #991B1B;
+  --teal: #0D9488;
+  --teal-light: #F0FDFA;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --border: #F3F4F6;
+  --border-medium: #E5E7EB;
+  --bg: #FFFFFF;
+  --bg-secondary: #F9FAFB;
+  --success: #16A34A;
+  --success-light: #F0FDF4;
+  --warning: #D97706;
+  --warning-light: #FFFBEB;
+  --danger: #DC2626;
+  --danger-light: #FEF2F2;
+  --info: #2563EB;
+  --info-light: #EFF6FF;
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-sheet: 0 -8px 40px rgba(0,0,0,0.12);
+  --font-body: "DM Sans", sans-serif;
+  --font-display: "DM Serif Display", serif;
+
+  /* Condition colours */
+  --condition-diabetes: #B91C1C;
+  --condition-thyroid: #7C3AED;
+  --condition-heart: #EA580C;
+  --condition-kidney: #0D9488;
+  --condition-hypertension: #1D4ED8;
+  --condition-default: #6B7280;
 }
 
 @layer base {
-  body {
-    @apply font-sans antialiased text-black/90 bg-white selection:bg-maroon/10 transition-colors duration-500;
+  *, *::before, *::after {
+    box-sizing: border-box;
   }
-  .dark body {
-    @apply text-white bg-dark-maroon;
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #F3F4F6;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+  }
+
+  input, button, select, textarea {
+    font-family: inherit;
+  }
+
+  button {
+    cursor: pointer;
   }
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-white border border-black/[0.05] rounded-[2.5rem] transition-all duration-500;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  /* Scrollbar hiding */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Card system */
+  .card {
+    background: var(--bg);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
   }
 
-  .dark .glass-card {
-    @apply bg-[#1A1C1E] border-white/[0.1];
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  /* Touch feedback */
+  .touch-card {
+    transition: transform 100ms ease, box-shadow 100ms ease;
+  }
+  .touch-card:active {
+    transform: scale(0.98);
   }
 
-  .glass-panel {
-    @apply bg-white border-t border-l border-black/[0.03] rounded-[3rem];
+  /* Bottom sheet */
+  .bottom-sheet {
+    border-radius: 20px 20px 0 0;
+    box-shadow: var(--shadow-sheet);
   }
 
-  .dark .glass-panel {
-    @apply bg-[#1A1C1E] border-white/[0.05];
-  }
-  
-  .pill-nav-glass {
-    @apply bg-white border border-black/[0.05] shadow-xl rounded-full;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-  }
-
-  .dark .pill-nav-glass {
-    @apply bg-[#1A1C1E] border-white/[0.1] shadow-2xl;
-    box-shadow: 0 0 40px rgba(192, 32, 62, 0.1);
+  /* Status badge base */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
 
-  .maroon-glow {
-    @apply relative;
+  .badge-normal {
+    background: var(--success-light);
+    color: var(--success);
   }
-  .maroon-glow::after {
-    content: '';
-    @apply absolute -z-10 inset-0 blur-[60px] opacity-10 bg-maroon rounded-full pointer-events-none;
+  .badge-high {
+    background: var(--danger-light);
+    color: var(--danger);
   }
-
-  .text-display {
-    @apply tracking-[-0.04em] font-light text-black leading-[1.1];
+  .badge-low {
+    background: var(--info-light);
+    color: var(--info);
   }
-  .dark .text-display {
-    @apply text-white;
-  }
-
-  .text-caption {
-    @apply text-[10px] uppercase tracking-[0.2em] font-semibold text-black/40;
-  }
-  .dark .text-caption {
-    @apply text-white/40;
+  .badge-elevated {
+    background: var(--warning-light);
+    color: var(--warning);
   }
 
-  .text-body {
-    @apply text-[15px] leading-relaxed text-black/60 font-light;
-  }
-  .dark .text-body {
-    @apply text-white/60;
-  }
-
-  .text-title {
-    @apply text-xl font-medium text-black;
-  }
-  .dark .text-title {
-    @apply text-white;
+  /* Skeleton loader */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+    border-radius: 8px;
   }
 
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 
-  .shimmer {
-    @apply relative overflow-hidden;
+  /* Pill button */
+  .btn-pill {
+    border-radius: var(--radius-pill);
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 15px;
+    transition: background 150ms ease, transform 100ms ease, box-shadow 150ms ease;
   }
-  .shimmer::after {
-    content: '';
-    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent;
-    animation: shimmer 3s infinite;
+  .btn-pill:active {
+    transform: scale(0.97);
   }
 
-  @keyframes shimmer {
-    100% { transform: translateX(100%); }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(185, 28, 28, 0.25);
+  }
+  .btn-primary:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 4px 16px rgba(185, 28, 28, 0.35);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid var(--border-medium);
+    color: var(--text-primary);
+  }
+  .btn-ghost:hover {
+    background: var(--bg-secondary);
+  }
+
+  /* Teal tab underline */
+  .tab-underline {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background: var(--teal);
+    border-radius: var(--radius-pill);
+    transition: left 200ms cubic-bezier(0.4, 0, 0.2, 1), width 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Condition chip colours */
+  .chip-diabetes { background: #FEF2F2; color: #B91C1C; border-color: #FECACA; }
+  .chip-thyroid  { background: #F5F3FF; color: #7C3AED; border-color: #DDD6FE; }
+  .chip-heart    { background: #FFF7ED; color: #EA580C; border-color: #FED7AA; }
+  .chip-kidney   { background: #F0FDFA; color: #0D9488; border-color: #99F6E4; }
+  .chip-hypertension { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+
+  /* Safe area bottom padding */
+  .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+  /* Content area desktop centering */
+  .app-shell {
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    background: #F3F4F6;
+  }
+
+  .app-content {
+    width: 100%;
+    max-width: 390px;
+    background: var(--bg);
+    min-height: 100dvh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Crisis pulse animation */
+  @keyframes pulse-danger {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+  }
+  .pulse-danger {
+    animation: pulse-danger 1.5s ease-in-out infinite;
   }
 }
