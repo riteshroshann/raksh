@@ -1,155 +1,203 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, Plus, Calendar, Activity } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Search, Bell, Plus, Calendar, TrendingUp, Activity, Info, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import { useVitals } from '../hooks/useVitals';
 import { useMedicines } from '../hooks/useMedicines';
 import type { Condition } from '../lib/types';
-import { ConditionChip } from '../components/ConditionChip';
-import { StatusBadge } from '../components/StatusBadge';
-import { supabase } from '../lib/supabase';
-import {
-  classifyBP, classifyFastingSugar, formatDate, relativeDay,
-  VITAL_META,
-} from '../lib/utils';
+import { classifyFastingSugar, relativeDay } from '../lib/utils';
 
-const CONDITION_FILTER_OPTIONS: (Condition | 'All')[] = [
-  'All', 'Diabetes', 'Thyroid', 'Heart', 'Kidney', 'Hypertension',
-];
+type HomeView = 'today' | 'months';
+
+const CONDITIONS: Condition[] = ['Diabetes', 'Thyroid', 'Heart', 'Kidney', 'Hypertension'];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
   const { user, familyMembers, activeMemberId, setActiveMemberId } = useAppContext();
-  const [conditionFilter, setConditionFilter] = useState<Condition | 'All'>('Diabetes');
+  const [homeView, setHomeView] = useState<HomeView>('today');
+  const [selectedCondition, setSelectedCondition] = useState<Condition>('Diabetes');
 
   const userId = user?.id;
   const profile = user?.profile;
+  const activeMember = familyMembers.find(m => m.id === activeMemberId);
+  const displayName = activeMember?.name ?? profile?.full_name ?? 'there';
+  const firstName = displayName.split(' ')[0];
+  const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
-  // Latest fasting sugar
   const { logs: sugarLogs, loading: sugarLoading } = useVitals(userId, 'blood_sugar_fasting', activeMemberId, 1);
-  // Today medicines (for overdue count)
-  const { todayDoses, loading: medLoading } = useMedicines(userId, activeMemberId);
+  const { todayDoses } = useMedicines(userId, activeMemberId);
+  const overdue = todayDoses.filter(d => d.status === 'missed').length;
 
   const latestSugar = sugarLogs[0];
   const sugarStatus = latestSugar ? classifyFastingSugar(latestSugar.value_1) : null;
 
-  const overdueDoses = todayDoses.filter(d => d.status === 'missed').length;
-
-  const activeMember = familyMembers.find(m => m.id === activeMemberId);
-  const activeLabel = activeMember?.name ?? profile?.full_name ?? 'there';
-  const firstName = activeLabel.split(' ')[0];
-  const initials = activeLabel.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-
   return (
-    <div className="px-5 pt-8 pb-6 bg-[#FAFBFC] min-h-full">
+    <div className="flex flex-col min-h-full bg-white">
 
-      {/* ── Header ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-6">
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveMemberId(null)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-sm transition-transform active:scale-95"
-            style={{ background: 'var(--primary)' }}
+            className="w-10 h-10 rounded-full overflow-hidden border border-black/[0.05] shadow-sm hover:scale-105 active:scale-95 transition-all"
+            style={{ background: '#C0203E' }}
           >
-            {initials}
+            <span className="flex items-center justify-center h-full text-white text-sm font-semibold">{initials}</span>
           </button>
-          <span className="text-sm font-medium text-[var(--text-primary)]">
-            Hi, {firstName} ✨
-          </span>
+          <div>
+            <span className="text-lg font-light text-black">Hi, {firstName}</span>
+            <span className="text-lg ml-1">✨</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            aria-label="Search"
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors"
-          >
-            <Search size={18} className="text-[var(--text-secondary)]" />
+        <div className="flex items-center gap-2">
+          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03] hover:bg-black/[0.06] transition-colors">
+            <Search size={18} className="text-black/50" />
           </button>
-          <button
-            aria-label="Notifications"
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors relative"
-          >
-            <Bell size={18} className="text-[var(--text-secondary)]" />
-            {overdueDoses > 0 && (
-              <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-[var(--primary)] border-2 border-[#FAFBFC]" />
-            )}
-          </button>
+          <div className="relative">
+            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03] hover:bg-black/[0.06] transition-colors">
+              <Bell size={18} className="text-black/50" />
+              {overdue > 0 && (
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#C0203E] border-2 border-white" />
+              )}
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* ── Greeting ─────────────────────────────────────────────────── */}
-      <h1 className="text-[32px] leading-[1.2] font-normal text-[var(--text-primary)] mb-8" style={{ fontFamily: 'var(--font-display)' }}>
-        <span className="text-[var(--text-secondary)]">Rise and shine,</span><br />
-        {firstName}! How do<br />
-        you feel today?
-      </h1>
+      {/* ── Main content ─────────────────────────────────────────── */}
+      <main className="flex-1 px-6 pb-4">
 
-      {/* ── Condition filter chips ───────────────────────────────────── */}
-      <div className="mb-6">
-        <p className="text-xs font-semibold text-[var(--text-primary)] mb-3">Your condition</p>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {CONDITION_FILTER_OPTIONS.map(c => {
-            const isActive = conditionFilter === c;
-            if (c === 'All') return null; // Design focuses on specific condition chips
-            return (
+        {/* Greeting */}
+        <div className="mt-4 mb-6 maroon-glow relative">
+          <span className="text-caption">Daily report</span>
+          <h1 className="text-display text-4xl leading-tight mt-2">
+            Rise and shine,<br />
+            {firstName}! How do<br />
+            you feel today?
+          </h1>
+        </div>
+
+        {/* Condition + toggle row */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base font-medium text-black">Your condition</span>
+            <Info size={14} className="text-black/20" />
+          </div>
+          <div className="flex items-center gap-1 p-1 rounded-2xl bg-black/[0.03] border border-black/[0.03]">
+            {(['today', 'months'] as HomeView[]).map(v => (
               <button
-                key={c}
-                onClick={() => setConditionFilter(c)}
-                className="px-4 py-2 rounded-full text-[13px] font-medium border whitespace-nowrap transition-all"
+                key={v}
+                onClick={() => setHomeView(v)}
+                className="px-3 py-1 rounded-xl text-xs font-bold transition-all capitalize"
                 style={{
-                  background: isActive ? 'white' : 'transparent',
-                  borderColor: isActive ? 'var(--border-medium)' : 'transparent',
-                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
+                  background: homeView === v ? 'white' : 'transparent',
+                  color: homeView === v ? '#111827' : 'rgba(0,0,0,0.3)',
+                  boxShadow: homeView === v ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                 }}
               >
-                {c}
+                {v}
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Main Vital Card (Diabetic Control) ───────────────────────── */}
-      <div className="card p-6 mb-6 shadow-sm border border-black/5">
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-baseline gap-1">
-            <span className="text-[44px] leading-none font-semibold text-[var(--text-primary)] tracking-tight">
-              {latestSugar ? latestSugar.value_1 : '--'}
-            </span>
-            <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">mg/dL</span>
-          </div>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--danger-light)]">
-            <Activity size={20} className="text-[var(--primary)]" />
+            ))}
           </div>
         </div>
-        
-        <h3 className="text-base font-semibold text-[var(--text-primary)] mb-2">Diabetic Control</h3>
-        <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-          {latestSugar && sugarStatus === 'normal' 
-            ? "Your fasting sugar is within the target range. Keep maintaining your diet and exercise routine."
-            : latestSugar && sugarStatus !== 'normal'
-            ? "Your fasting sugar is outside the ideal range. Please review your recent meals and medication."
-            : "No recent fasting sugar readings found. Log your vitals to see insights here."}
-        </p>
-      </div>
 
-      {/* ── Action Buttons ────────────────────────────────────────────── */}
-      <div className="flex gap-3 mb-8">
-        <button className="flex-1 card py-4 px-3 flex flex-col items-center justify-center gap-3 border border-black/5 active:scale-95 transition-transform text-center">
-          <div className="text-[var(--primary)] pt-1">
-            <Plus size={24} />
-          </div>
-          <span className="text-xs font-semibold text-[var(--text-primary)]">Add your<br />symptoms</span>
-        </button>
-        <button className="flex-1 card py-4 px-3 flex flex-col items-center justify-center gap-3 border border-black/5 active:scale-95 transition-transform text-center">
-          <div className="text-[var(--text-secondary)] pt-1">
-            <Calendar size={24} />
-          </div>
-          <span className="text-xs font-semibold text-[var(--text-primary)]">Make an<br />Appointment</span>
-        </button>
-      </div>
+        {/* ── Main stats card ─────────────────────────────────────── */}
+        <motion.div
+          key={homeView}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          whileHover={shouldReduceMotion ? {} : { y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.07)' }}
+          whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}
+          className="glass-card p-7 flex flex-col gap-5 cursor-pointer mb-5 border border-black/[0.05]"
+        >
+          {homeView === 'today' ? (
+            <>
+              <div className="flex items-baseline gap-2">
+                {sugarLoading ? (
+                  <div className="skeleton h-16 w-32 rounded-2xl" />
+                ) : (
+                  <>
+                    <span className="text-7xl font-light tracking-[-0.04em] leading-none text-black">
+                      {latestSugar ? latestSugar.value_1 : '--'}
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-black/30">mg/dL</span>
+                  </>
+                )}
+              </div>
+              <div className="h-px w-full bg-black/5" />
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-medium text-black">Diabetes Control</span>
+                  <div className="w-9 h-9 bg-[#C0203E]/10 rounded-[1rem] flex items-center justify-center border border-[#C0203E]/20">
+                    <Activity size={16} className="text-[#C0203E]" />
+                  </div>
+                </div>
+                <p className="text-sm text-black/40 leading-relaxed font-light">
+                  {latestSugar && sugarStatus === 'normal'
+                    ? 'Your fasting sugar is within the target range. Keep up the consistent diet!'
+                    : latestSugar
+                    ? 'Your fasting sugar is outside the ideal range. Review your recent meals.'
+                    : 'No readings yet. Log your first vital to see your Diabetes Control status.'}
+                </p>
+                {latestSugar && (
+                  <span className="text-[10px] font-bold text-black/20 uppercase tracking-wider mt-1">
+                    Last logged {relativeDay(latestSugar.logged_at)}
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-base font-medium text-black">Monthly Progress</span>
+                <div className="w-9 h-9 bg-black/5 rounded-[1rem] flex items-center justify-center border border-black/10">
+                  <TrendingUp size={16} className="text-[#C0203E]" />
+                </div>
+              </div>
+              <p className="text-sm text-black/40 leading-relaxed font-light">
+                Your average HbA1c has improved over the last 3 months. You're on the right track.
+              </p>
+            </>
+          )}
+        </motion.div>
 
+        {/* ── Action cards ────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-4">
+          <motion.button
+            whileHover={shouldReduceMotion ? {} : { y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.06)' }}
+            whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}
+            className="glass-card p-6 flex flex-col justify-between text-left border border-black/[0.05]"
+            style={{ aspectRatio: '1' }}
+            onClick={() => navigate('/vitals')}
+          >
+            <span className="text-base font-medium leading-snug text-black">Add your<br />symptoms</span>
+            <div className="flex justify-end">
+              <div className="w-11 h-11 bg-[#C0203E]/10 text-[#C0203E] rounded-2xl flex items-center justify-center border border-[#C0203E]/20 active:scale-90 transition-transform">
+                <Plus size={22} />
+              </div>
+            </div>
+          </motion.button>
+
+          <motion.button
+            whileHover={shouldReduceMotion ? {} : { y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.06)' }}
+            whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}
+            className="glass-card p-6 flex flex-col justify-between text-left border border-black/[0.05]"
+            style={{ aspectRatio: '1' }}
+            onClick={() => navigate('/vitals')}
+          >
+            <span className="text-base font-medium leading-snug text-black">Make an<br />appointment</span>
+            <div className="flex justify-end">
+              <div className="w-11 h-11 bg-black/5 text-black/50 rounded-2xl flex items-center justify-center border border-black/10 active:scale-90 transition-transform">
+                <Calendar size={20} />
+              </div>
+            </div>
+          </motion.button>
+        </div>
+
+      </main>
     </div>
   );
 }

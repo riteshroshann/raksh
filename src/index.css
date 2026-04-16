@@ -1,12 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "DM Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "DM Serif Display", Georgia, serif;
 
-  --color-primary: #B91C1C;
-  --color-primary-hover: #991B1B;
-  --color-primary-light: #FEF2F2;
+  --color-maroon: #C0203E;
+  --color-dark-maroon: #0D0305;
+  --color-primary: #C0203E;
+  --color-primary-hover: #A01830;
+  --color-primary-light: #FFF0F2;
   --color-teal: #0D9488;
   --color-teal-light: #F0FDFA;
   --color-success: #16A34A;
@@ -24,13 +28,14 @@
   --color-border-medium: #E5E7EB;
   --color-bg: #FFFFFF;
   --color-bg-secondary: #F9FAFB;
-  --color-surface: #F3F4F6;
 }
 
 :root {
-  --primary: #B91C1C;
-  --primary-light: #FEF2F2;
-  --primary-hover: #991B1B;
+  --primary: #C0203E;
+  --primary-light: #FFF0F2;
+  --primary-hover: #A01830;
+  --maroon: #C0203E;
+  --dark-maroon: #0D0305;
   --teal: #0D9488;
   --teal-light: #F0FDFA;
   --text-primary: #111827;
@@ -46,18 +51,15 @@
   --warning-light: #FFFBEB;
   --danger: #DC2626;
   --danger-light: #FEF2F2;
-  --info: #2563EB;
-  --info-light: #EFF6FF;
-  --radius-card: 16px;
+  --radius-card: 2.5rem;
   --radius-btn: 12px;
   --radius-pill: 999px;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.05);
   --shadow-sheet: 0 -8px 40px rgba(0,0,0,0.12);
-  --font-body: "DM Sans", sans-serif;
+  --font-body: "DM Sans", "Inter", sans-serif;
   --font-display: "DM Serif Display", serif;
 
-  /* Condition colours */
-  --condition-diabetes: #B91C1C;
+  --condition-diabetes: #C0203E;
   --condition-thyroid: #7C3AED;
   --condition-heart: #EA580C;
   --condition-kidney: #0D9488;
@@ -66,179 +68,233 @@
 }
 
 @layer base {
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
-  html {
-    -webkit-tap-highlight-color: transparent;
-  }
-
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-tap-highlight-color: transparent; }
   body {
     font-family: var(--font-body);
-    background-color: #F3F4F6;
+    background-color: #FFFFFF;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
     padding: 0;
   }
-
-  input, button, select, textarea {
-    font-family: inherit;
-  }
-
-  button {
-    cursor: pointer;
-  }
+  input, button, select, textarea { font-family: inherit; }
+  button { cursor: pointer; }
 }
 
 @layer utilities {
-  /* Scrollbar hiding */
+  /* ── Scrollbar ─────────────────────── */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Card system */
+  /* ── Phone Frame Shell ─────────────── */
+  .phone-shell {
+    width: 100%;
+    max-width: 430px;
+    height: 100dvh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .phone-shell {
+      height: 850px;
+      border-radius: 3.5rem;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.04), 0 40px 120px rgba(0,0,0,0.15), 0 0 80px rgba(192,32,62,0.06);
+    }
+  }
+
+  /* ── Desktop wrapper around phone ── */
+  .desktop-stage {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FAFAFA;
+    padding: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .desktop-stage {
+      background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 50%, #FAF0F2 100%);
+    }
+  }
+
+  /* ── Legacy app-shell (pages without phone frame) ─── */
+  .app-shell { min-height: 100dvh; display: flex; justify-content: center; background: #FAFAFA; }
+  .app-content { width: 100%; max-width: 430px; background: var(--bg); min-height: 100dvh; position: relative; display: flex; flex-direction: column; }
+
+  /* ── Glassmorphism cards (mark 12 style) ─── */
+  .glass-card {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 2.5rem;
+    transition: all 0.5s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+  }
+  .glass-panel {
+    background: white;
+    border-top: 1px solid rgba(0,0,0,0.03);
+    border-left: 1px solid rgba(0,0,0,0.03);
+    border-radius: 3rem;
+  }
+  .pill-nav-glass {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    border-radius: 9999px;
+  }
+
+  /* ── Simple card (lighter) ─── */
   .card {
-    background: var(--bg);
+    background: white;
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
+    border: 1px solid rgba(0,0,0,0.04);
   }
 
-  /* Touch feedback */
-  .touch-card {
-    transition: transform 100ms ease, box-shadow 100ms ease;
-  }
-  .touch-card:active {
-    transform: scale(0.98);
-  }
+  /* ── Touch feedback ─── */
+  .touch-card { transition: transform 100ms ease, box-shadow 100ms ease; }
+  .touch-card:active { transform: scale(0.98); }
 
-  /* Bottom sheet */
-  .bottom-sheet {
-    border-radius: 20px 20px 0 0;
-    box-shadow: var(--shadow-sheet);
-  }
+  /* ── Bottom sheet ─── */
+  .bottom-sheet { border-radius: 20px 20px 0 0; box-shadow: var(--shadow-sheet); }
 
-  /* Status badge base */
+  /* ── Status badges ─── */
   .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 10px;
-    border-radius: var(--radius-pill);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    display: inline-flex; align-items: center;
+    padding: 2px 10px; border-radius: var(--radius-pill);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
   }
+  .badge-normal { background: var(--success-light); color: var(--success); }
+  .badge-high   { background: var(--danger-light);  color: var(--danger); }
+  .badge-low    { background: var(--info-light);    color: var(--info); }
+  .badge-elevated { background: var(--warning-light); color: var(--warning); }
+  .badge-crisis { background: #FEF2F2; color: #991B1B; }
 
-  .badge-normal {
-    background: var(--success-light);
-    color: var(--success);
-  }
-  .badge-high {
-    background: var(--danger-light);
-    color: var(--danger);
-  }
-  .badge-low {
-    background: var(--info-light);
-    color: var(--info);
-  }
-  .badge-elevated {
-    background: var(--warning-light);
-    color: var(--warning);
-  }
-
-  /* Skeleton loader */
+  /* ── Skeleton ─── */
   .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
     border-radius: 8px;
   }
-
   @keyframes skeleton-shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
 
-  /* Pill button */
+  /* ── Pill buttons ─── */
   .btn-pill {
     border-radius: var(--radius-pill);
     min-height: 44px;
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
+    align-items: center; justify-content: center;
+    font-weight: 600;
     font-size: 15px;
     transition: background 150ms ease, transform 100ms ease, box-shadow 150ms ease;
   }
-  .btn-pill:active {
-    transform: scale(0.97);
-  }
-
+  .btn-pill:active { transform: scale(0.97); }
   .btn-primary {
     background: var(--primary);
     color: white;
-    box-shadow: 0 2px 8px rgba(185, 28, 28, 0.25);
+    box-shadow: 0 4px 16px rgba(192,32,62,0.3);
   }
   .btn-primary:hover {
     background: var(--primary-hover);
-    box-shadow: 0 4px 16px rgba(185, 28, 28, 0.35);
+    box-shadow: 0 8px 24px rgba(192,32,62,0.4);
   }
-
   .btn-ghost {
     background: transparent;
     border: 1.5px solid var(--border-medium);
     color: var(--text-primary);
   }
-  .btn-ghost:hover {
-    background: var(--bg-secondary);
-  }
+  .btn-ghost:hover { background: var(--bg-secondary); }
 
-  /* Teal tab underline */
-  .tab-underline {
-    position: absolute;
-    bottom: 0;
-    height: 2px;
-    background: var(--teal);
-    border-radius: var(--radius-pill);
-    transition: left 200ms cubic-bezier(0.4, 0, 0.2, 1), width 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Condition chip colours */
-  .chip-diabetes { background: #FEF2F2; color: #B91C1C; border-color: #FECACA; }
-  .chip-thyroid  { background: #F5F3FF; color: #7C3AED; border-color: #DDD6FE; }
-  .chip-heart    { background: #FFF7ED; color: #EA580C; border-color: #FED7AA; }
-  .chip-kidney   { background: #F0FDFA; color: #0D9488; border-color: #99F6E4; }
+  /* ── Condition chips ─── */
+  .chip-diabetes   { background: #FEF2F2; color: #C0203E; border-color: #FECACA; }
+  .chip-thyroid    { background: #F5F3FF; color: #7C3AED; border-color: #DDD6FE; }
+  .chip-heart      { background: #FFF7ED; color: #EA580C; border-color: #FED7AA; }
+  .chip-kidney     { background: #F0FDFA; color: #0D9488; border-color: #99F6E4; }
   .chip-hypertension { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
 
-  /* Safe area bottom padding */
+  /* ── Text styles (mark 12) ─── */
+  .text-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.04em;
+    font-weight: 300;
+    line-height: 1.1;
+    color: #111827;
+  }
+  .text-caption {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    color: rgba(0,0,0,0.4);
+  }
+
+  /* ── Ambient glow ─── */
+  .maroon-glow::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    filter: blur(60px);
+    opacity: 0.1;
+    background: #C0203E;
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  /* ── Safe area ─── */
   .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
-  /* Content area desktop centering */
-  .app-shell {
-    min-height: 100dvh;
-    display: flex;
-    justify-content: center;
-    background: #F3F4F6;
-  }
-
-  .app-content {
-    width: 100%;
-    max-width: 390px;
-    background: var(--bg);
-    min-height: 100dvh;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Crisis pulse animation */
+  /* ── Crisis pulse ─── */
   @keyframes pulse-danger {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
-    50% { box-shadow: 0 0 0 8px rgba(185, 28, 28, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192,32,62,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(192,32,62,0); }
   }
-  .pulse-danger {
-    animation: pulse-danger 1.5s ease-in-out infinite;
+  .pulse-danger { animation: pulse-danger 1.5s ease-in-out infinite; }
+
+  /* ── Desktop landing page ─── */
+  .landing-nav-link {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 150ms ease;
+    text-decoration: none;
   }
+  .landing-nav-link:hover { color: var(--text-primary); }
+
+  .feature-card {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 2rem;
+    padding: 2rem;
+    transition: all 300ms ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    border-color: rgba(192,32,62,0.15);
+  }
+
+  /* ── Shimmer ─── */
+  .shimmer { position: relative; overflow: hidden; }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer { 100% { transform: translateX(100%); } }
 }

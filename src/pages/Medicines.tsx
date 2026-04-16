@@ -1,188 +1,257 @@
 import React, { useState } from 'react';
-import { Search, Bell, Plus, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Search, Bell, ChevronRight, AlertCircle, Calendar, Clock, CheckCircle2, Pill as PillIcon } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import { useMedicines } from '../hooks/useMedicines';
-import { Toast, useToast } from '../components/Toast';
 import type { DoseTimeSlot } from '../lib/types';
 
+const DAYS = [
+  { day: 'Sun', date: 17 },
+  { day: 'Mon', date: 18 },
+  { day: 'Tue', date: 19 },
+  { day: 'Wed', date: 20 },
+  { day: 'Thu', date: 21 },
+  { day: 'Fri', date: 22 },
+  { day: 'Sat', date: 23 },
+];
+
 export default function Medicines() {
+  const shouldReduce = useReducedMotion();
   const { user, familyMembers, activeMemberId, setActiveMemberId } = useAppContext();
-  const toast = useToast();
+  const [selectedDate, setSelectedDate] = useState('20');
+
   const { medicines, todayDoses, markDose } = useMedicines(user?.id, activeMemberId);
 
   const profile = user?.profile;
   const activeMember = familyMembers.find(m => m.id === activeMemberId);
-  const activeLabel = activeMember?.name ?? profile?.full_name ?? 'there';
-  const firstName = activeLabel.split(' ')[0];
-  const initials = activeLabel.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const displayName = activeMember?.name ?? profile?.full_name ?? 'there';
+  const firstName = displayName.split(' ')[0];
+  const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   const takenCount = todayDoses.filter(d => d.status === 'taken').length;
   const totalCount = todayDoses.length;
-  const dosesToTake = todayDoses.filter(d => d.status !== 'taken');
-  const dosesTaken = todayDoses.filter(d => d.status === 'taken');
+  const progress = totalCount > 0 ? (takenCount / totalCount) * 100 : 0;
 
-  // Hardcoded calendar wrapper for visual match
-  const days = [
-    { label: 'S', date: 18, active: false },
-    { label: 'M', date: 19, active: false },
-    { label: 'T', date: 20, active: true },
-    { label: 'W', date: 21, active: false },
-    { label: 'T', date: 22, active: false },
-  ];
-
-  const lowStock = medicines.filter(
-    m => m.quantity_remaining !== null && m.quantity_remaining <= 7
-  );
-
-  async function handleTake(medicineId: string, slot: DoseTimeSlot) {
-    const { error } = await markDose(medicineId, slot, true);
-    if (error) toast.show(error, 'error');
-    else toast.show('Marked as taken', 'success');
-  }
+  const lowStock = medicines.filter(m => m.quantity_remaining !== null && m.quantity_remaining <= 5);
 
   return (
-    <div className="px-5 pt-8 pb-32 bg-[#FAFBFC] min-h-full">
-      {/* ── Header ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="flex flex-col min-h-full bg-white">
+
+      {/* ── Header ────────────────────────────────────────────────── */}
+      <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveMemberId(null)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-sm transition-transform active:scale-95"
-            style={{ background: 'var(--primary)' }}
+            className="w-10 h-10 rounded-full border border-black/[0.05] shadow-sm hover:scale-105 active:scale-95 transition-all"
+            style={{ background: '#C0203E' }}
           >
-            {initials}
+            <span className="flex items-center justify-center h-full text-white text-sm font-semibold">{initials}</span>
           </button>
-          <span className="text-sm font-medium text-[var(--text-primary)]">
-            Hi, {firstName} ✨
-          </span>
+          <span className="text-lg font-light text-black">Hi, {firstName} ✨</span>
         </div>
-        <div className="flex items-center gap-1">
-          <button aria-label="Search" className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors">
-            <Search size={18} className="text-[var(--text-secondary)]" />
+        <div className="flex items-center gap-2">
+          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03]">
+            <Search size={18} className="text-black/50" />
           </button>
-          <button aria-label="Notifications" className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 transition-colors">
-            <Bell size={18} className="text-[var(--text-secondary)]" />
+          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-black/[0.03] border border-black/[0.03]">
+            <Bell size={18} className="text-black/50" />
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-[28px] font-semibold text-[var(--text-primary)]">Medicines</h1>
-        <button className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1">
-          March <ChevronRight size={14} />
-        </button>
-      </div>
+      <main className="flex-1 px-6 pb-4">
 
-      {/* ── Calendar Strip ───────────────────────────────────────────── */}
-      <div className="flex justify-between items-center gap-2 mb-8">
-        {days.map((d, i) => (
-          <div key={i} className="flex flex-col items-center gap-2">
-            <span className="text-[10px] font-medium text-[var(--text-muted)]">{d.label}</span>
-            <div
-              className="w-[42px] h-[42px] rounded-full flex items-center justify-center text-sm font-semibold shadow-sm border border-black/5"
-              style={{
-                background: d.active ? 'var(--primary)' : 'white',
-                color: d.active ? 'white' : 'var(--text-primary)',
-              }}
-            >
-              {d.date}
+        {/* Title + today label */}
+        <div className="flex items-center justify-between mt-4 mb-6">
+          <h1 className="text-2xl font-medium text-black tracking-tight">Medicines</h1>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/[0.03] border border-black/[0.03]">
+            <Calendar size={13} className="text-black/40" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-black/40">Today</span>
+          </div>
+        </div>
+
+        {/* ── Calendar strip ─────────────────────────────────────── */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className="text-caption">October 2025</span>
+            <div className="flex gap-2">
+              <ChevronRight size={15} className="text-black/20 rotate-180 cursor-pointer" />
+              <ChevronRight size={15} className="text-black/20 cursor-pointer" />
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* ── Today's Progress ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)]">Today's Progress</h2>
-        <span className="text-[11px] font-bold text-[var(--primary)] uppercase tracking-wider">
-          {takenCount}/{totalCount} Taken
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full bg-[var(--border)] overflow-hidden mb-8">
-        <motion.div
-          className="h-full bg-[var(--primary)]"
-          initial={{ width: 0 }}
-          animate={{ width: `${totalCount ? (takenCount / totalCount) * 100 : 0}%` }}
-        />
-      </div>
-
-      {/* ── To Take ───────────────────────────────────────────────────── */}
-      <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">To take</h2>
-      <div className="flex flex-col gap-3 mb-8">
-        {dosesToTake.length === 0 ? (
-          <div className="card p-5 text-center text-sm text-[var(--text-secondary)] shadow-sm border border-black/5">
-            All caught up for today!
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {DAYS.map((d, idx) => {
+              const isActive = selectedDate === String(d.date);
+              return (
+                <motion.button
+                  key={d.date}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.04 }}
+                  whileHover={shouldReduce ? {} : { y: -3 }}
+                  whileTap={shouldReduce ? {} : { scale: 0.95 }}
+                  onClick={() => setSelectedDate(String(d.date))}
+                  className="flex flex-col items-center gap-1.5 min-w-[50px] py-3 rounded-3xl border transition-all"
+                  style={isActive
+                    ? { background: '#C0203E', borderColor: 'transparent', color: 'white', boxShadow: '0 8px 20px rgba(192,32,62,0.25)' }
+                    : { background: 'rgba(0,0,0,0.04)', borderColor: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.4)' }
+                  }
+                >
+                  <span className="text-[9px] font-bold uppercase tracking-wider">{d.day}</span>
+                  <span className="text-lg font-medium">{d.date}</span>
+                </motion.button>
+              );
+            })}
           </div>
-        ) : (
-          dosesToTake.map(dose => (
-            <div key={`${dose.medicine.id}-${dose.slot}`} className="card p-4 flex items-center justify-between shadow-sm border border-black/5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--primary-light)] flex items-center justify-center">
-                  <span className="text-lg">💊</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">{dose.medicine.name}</p>
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5 capitalize">
-                    {dose.medicine.dosage} · {dose.slot}
-                  </p>
-                </div>
+        </div>
+
+        {/* ── Progress ───────────────────────────────────────────── */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-black">Today's Progress</span>
+            <span className="text-sm font-bold" style={{ color: '#C0203E' }}>{takenCount}/{totalCount} Taken</span>
+          </div>
+          <div className="h-4 rounded-full overflow-hidden bg-black/5 border border-black/5">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="h-full rounded-full"
+              style={{ background: 'linear-gradient(to right, #C0203E, rgba(192,32,62,0.6))', boxShadow: '0 0 15px rgba(192,32,62,0.3)' }}
+            />
+          </div>
+          <p className="text-[10px] font-bold mt-1.5 uppercase tracking-wider text-black/20">
+            {progress === 100 ? 'All medicines taken! Great job.' : `${totalCount - takenCount} more to go today`}
+          </p>
+        </div>
+
+        {/* ── To take ─────────────────────────────────────────────── */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-5 px-1">
+            <span className="text-xl font-medium text-black">To take</span>
+          </div>
+          <div className="flex flex-col gap-4">
+            {todayDoses.length === 0 ? (
+              <div className="glass-card p-6 text-center border border-black/5">
+                <p className="text-sm text-black/40">No medicines scheduled. Add your first medicine →</p>
               </div>
-              <button
-                onClick={() => handleTake(dose.medicine.id, dose.slot)}
-                className="px-4 py-2 rounded-full text-xs font-semibold text-[var(--primary)] border border-[var(--primary)] bg-white active:scale-95 transition-transform uppercase tracking-wider"
-              >
-                Take
-              </button>
-            </div>
-          ))
-        )}
-      </div>
+            ) : (
+              todayDoses.map(dose => {
+                const taken = dose.status === 'taken';
+                return (
+                  <motion.div
+                    key={`${dose.medicine.id}-${dose.slot}`}
+                    whileHover={shouldReduce ? {} : { x: 4, backgroundColor: taken ? 'rgba(0,0,0,0.01)' : 'rgba(0,0,0,0.02)' }}
+                    whileTap={shouldReduce ? {} : { scale: 0.985 }}
+                    onClick={() => markDose(dose.medicine.id, dose.slot as DoseTimeSlot, !taken)}
+                    className="glass-card p-5 flex items-center gap-5 cursor-pointer transition-all border"
+                    style={{
+                      borderColor: 'rgba(0,0,0,0.05)',
+                      opacity: taken ? 0.5 : 1,
+                    }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-[1.5rem] flex items-center justify-center border shadow-sm"
+                      style={taken
+                        ? { background: 'rgba(0,0,0,0.05)', borderColor: 'rgba(0,0,0,0.05)' }
+                        : { background: 'rgba(192,32,62,0.1)', borderColor: 'rgba(192,32,62,0.2)' }
+                      }
+                    >
+                      <PillIcon size={24} style={{ color: taken ? 'rgba(0,0,0,0.1)' : '#C0203E' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <h4 className={`text-base font-medium ${taken ? 'line-through text-black/30' : 'text-black'}`}>
+                            {dose.medicine.name}
+                          </h4>
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-[#C0203E]/20 text-[#C0203E]">
+                            {dose.slot}
+                          </span>
+                        </div>
+                        {taken && (
+                          <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30">
+                            <CheckCircle2 size={11} className="text-green-500" />
+                          </div>
+                        )}
+                      </div>
+                      <p className={`text-xs mt-0.5 font-light ${taken ? 'text-black/20' : 'text-black/40'}`}>
+                        {dose.medicine.dosage} · {dose.medicine.frequency}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
+        </div>
 
-      {/* ── Refill Reminders ──────────────────────────────────────────── */}
-      {lowStock.length > 0 && (
-        <>
-          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">Refill Reminders</h2>
-          <div className="flex flex-col gap-3 mb-8">
-            {lowStock.map(med => (
-              <div key={med.id} className="card p-4 flex items-center justify-between shadow-sm border border-black/5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[var(--danger-light)] flex items-center justify-center">
-                    <span className="text-lg">💊</span>
+        {/* ── Refill Reminders ─────────────────────────────────────── */}
+        {lowStock.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-5 px-1">
+              <AlertCircle size={18} className="text-[#C0203E]" />
+              <span className="text-xl font-medium text-black">Refill Reminders</span>
+            </div>
+            <div className="flex flex-col gap-4">
+              {lowStock.map(med => (
+                <div
+                  key={med.id}
+                  className="glass-card p-5 flex items-center gap-5 border"
+                  style={{ background: 'rgba(192,32,62,0.04)', borderColor: 'rgba(192,32,62,0.15)' }}
+                >
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center border bg-black/5 border-black/10">
+                    <PillIcon size={22} className="text-[#C0203E]" />
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">{med.name}</p>
-                    <p className="text-xs text-[var(--danger)] font-medium mt-0.5">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base font-medium text-black">{med.name}</h4>
+                    <p className="text-xs font-bold" style={{ color: '#C0203E' }}>
                       {med.quantity_remaining} pills remaining
                     </p>
                   </div>
+                  <button
+                    className="px-5 py-2.5 text-white text-xs font-bold rounded-2xl active:scale-95 transition-all"
+                    style={{ background: '#C0203E', boxShadow: '0 4px 12px rgba(192,32,62,0.3)' }}
+                  >
+                    Refill
+                  </button>
                 </div>
-                <button className="px-4 py-2 rounded-full text-xs font-semibold text-white bg-[var(--primary)] active:scale-95 transition-transform uppercase tracking-wider shadow-sm">
-                  Add
-                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Upcoming Doctor Visit ───────────────────────────────── */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-5 px-1">
+            <Calendar size={18} className="text-[#C0203E]" />
+            <span className="text-xl font-medium text-black">Upcoming Doctor Visit</span>
+          </div>
+          <motion.div
+            whileHover={shouldReduce ? {} : { scale: 1.01, boxShadow: '0 20px 40px rgba(192,32,62,0.2)' }}
+            whileTap={shouldReduce ? {} : { scale: 0.99 }}
+            className="glass-card p-6 flex items-center gap-5 cursor-pointer shadow-xl"
+            style={{ background: 'linear-gradient(135deg, #C0203E 0%, rgba(192,32,62,0.85) 100%)', border: 'none' }}
+          >
+            <div className="flex flex-col items-center justify-center w-14 h-14 rounded-[1.2rem] border border-white/20" style={{ background: 'rgba(255,255,255,0.12)' }}>
+              <span className="text-[9px] font-bold text-white/60 uppercase">Oct</span>
+              <span className="text-xl font-bold text-white">24</span>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-base font-medium text-white">Dr. Aris (Dentist)</h4>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <Clock size={11} className="text-white/50" />
+                <span className="text-xs text-white/50 font-bold">10:00 AM</span>
               </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* ── Upcoming Doctor Visit ──────────────────────────────────────── */}
-      <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">Upcoming Doctor Visit</h2>
-      <div className="rounded-[20px] p-5 text-white flex items-center gap-4 shadow-md bg-[var(--primary)] mb-6">
-        <div className="flex flex-col items-center justify-center bg-white/20 rounded-xl w-14 h-14 shrink-0">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-white/90">Oct</span>
-          <span className="text-xl font-semibold leading-none mt-0.5">24</span>
+            </div>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Pre-visit</span>
+              <ChevronRight size={18} className="text-white/40" />
+            </div>
+          </motion.div>
         </div>
-        <div className="flex-1">
-          <h3 className="text-base font-semibold">Dr. Anil</h3>
-          <p className="text-xs text-white/80 mt-0.5">Dentist</p>
-          <div className="flex items-center gap-1 mt-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20">10:00 AM</span>
-          </div>
-        </div>
-        <ChevronRight size={20} className="text-white/70" />
-      </div>
 
+      </main>
     </div>
   );
 }
