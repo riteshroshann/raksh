@@ -19,7 +19,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 interface BottomNavProps {
-  /** Number of overdue doses — shows badge on Medicines tab */
+  
   overdueDoseCount?: number;
 }
 

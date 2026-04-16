@@ -81,7 +81,6 @@ export function useMedicines(
     return () => { mounted = false; };
   }, [userId, familyMemberId, version]);
 
-  // Build today's dose schedule
   const todayDoses: TodayDose[] = medicines.flatMap(med =>
     (med.times ?? []).map(time => {
       const slot = slotForTime(time);

@@ -61,10 +61,9 @@ function FloatingNav() {
 
 export function Shell() {
   return (
-    /* Desktop: centers the phone frame with a textured backdrop */
+    
     <div className="desktop-stage">
 
-      {/* Subtle desktop ambient glows */}
       <div
         className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full pointer-events-none hidden md:block"
         style={{ background: 'rgba(192,32,62,0.04)', filter: 'blur(100px)' }}
@@ -74,10 +73,8 @@ export function Shell() {
         style={{ background: 'rgba(192,32,62,0.04)', filter: 'blur(100px)' }}
       />
 
-      {/* ── Phone frame ──────────────────────────── */}
       <div className="phone-shell relative">
 
-        {/* Scrollable page content */}
         <main
           className="flex-1 overflow-y-auto no-scrollbar bg-[#FAFAFA]"
           style={{ paddingBottom: 90 }}
@@ -87,7 +84,6 @@ export function Shell() {
           </AnimatePresence>
         </main>
 
-        {/* Floating pill nav */}
         <FloatingNav />
       </div>
     </div>

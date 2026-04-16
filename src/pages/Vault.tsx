@@ -61,7 +61,6 @@ export default function Vault() {
   return (
     <div className="flex flex-col min-h-full bg-white">
 
-      {/* ── Header ────────────────────────────────────────────────── */}
       <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
@@ -85,7 +84,6 @@ export default function Vault() {
 
       <main className="flex-1 px-6 pb-4 relative">
 
-        {/* Title */}
         <div className="flex items-center justify-between mt-4 mb-6">
           <h1 className="text-2xl font-medium text-black tracking-tight">MedVault</h1>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/[0.03] border border-black/[0.03]">
@@ -94,7 +92,6 @@ export default function Vault() {
           </div>
         </div>
 
-        {/* ── Upload bar ──────────────────────────────────────────── */}
         <div className="flex gap-3 mb-6">
           <button className="flex-1 h-16 rounded-[2rem] border bg-black/[0.03] border-black/[0.05] flex items-center justify-center gap-3 transition-all hover:bg-black/[0.05] active:scale-[0.98] group">
             <div className="w-9 h-9 bg-[#C0203E]/10 rounded-full flex items-center justify-center border border-[#C0203E]/20 group-hover:scale-110 transition-transform">
@@ -110,7 +107,6 @@ export default function Vault() {
           </button>
         </div>
 
-        {/* ── Category grid ────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           {VAULT_CATEGORIES.map(cat => (
             <motion.div
@@ -131,7 +127,7 @@ export default function Vault() {
                 <h4 className="text-base font-medium text-black">{cat.label}</h4>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-black/20 mt-0.5">Last: {cat.lastDate}</p>
               </div>
-              {/* Ghost icon */}
+              
               <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
                 <cat.icon size={80} className="text-[#C0203E]" />
               </div>
@@ -139,7 +135,6 @@ export default function Vault() {
           ))}
         </div>
 
-        {/* ── Hidden Vault ─────────────────────────────────────────── */}
         <div className="mb-6">
           <motion.div
             whileHover={shouldReduce ? {} : { scale: 1.01, boxShadow: '0 20px 40px rgba(192,32,62,0.1)' }}
@@ -162,7 +157,6 @@ export default function Vault() {
           </motion.div>
         </div>
 
-        {/* ── Condition filter ─────────────────────────────────────── */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4 px-1">
             <span className="text-caption">Filter by condition</span>
@@ -192,7 +186,6 @@ export default function Vault() {
           </div>
         </div>
 
-        {/* ── Recent Records ───────────────────────────────────────── */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-5 px-1">
             <span className="text-xl font-medium text-black">Recent Records</span>
@@ -255,7 +248,6 @@ export default function Vault() {
         </div>
       </main>
 
-      {/* ── Hidden Vault PIN overlay ──────────────────────────────── */}
       <AnimatePresence>
         {showVaultAuth && (
           <motion.div
@@ -273,7 +265,7 @@ export default function Vault() {
                 <h2 className="text-2xl font-medium text-black">Hidden Vault</h2>
                 <p className="text-xs font-bold uppercase tracking-wider text-black/30 mt-1">Enter your 4-digit PIN</p>
               </div>
-              {/* PIN dots */}
+              
               <div className="flex gap-4">
                 {[0,1,2,3].map(i => (
                   <motion.div
@@ -289,7 +281,7 @@ export default function Vault() {
                   />
                 ))}
               </div>
-              {/* Number pad */}
+              
               <div className="grid grid-cols-3 gap-5 w-full">
                 {[1,2,3,4,5,6,7,8,9].map(n => (
                   <motion.button

@@ -51,7 +51,6 @@ export default function Profile() {
   return (
     <div className="flex flex-col min-h-full bg-white">
 
-      {/* ── Header ────────────────────────────────────────────────── */}
       <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
@@ -78,7 +77,6 @@ export default function Profile() {
 
       <main className="flex-1 px-6 pb-4">
 
-        {/* ── Avatar + name hero ─────────────────────────────────── */}
         <div className="mt-4 mb-8 flex flex-col items-center text-center">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-medium text-white border-4 border-white shadow-xl mb-4"
@@ -93,7 +91,6 @@ export default function Profile() {
           </span>
         </div>
 
-        {/* ── Conditions ────────────────────────────────────────────── */}
         {profile?.conditions && profile.conditions.length > 0 && (
           <div className="glass-card p-5 mb-4 border border-black/[0.05]">
             <p className="text-caption mb-3">Conditions</p>
@@ -118,7 +115,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* ── Family members ────────────────────────────────────────── */}
         {familyMembers.length > 0 && (
           <div className="glass-card p-5 mb-4 border border-black/[0.05]">
             <p className="text-caption mb-4">Family Members</p>
@@ -142,11 +138,10 @@ export default function Profile() {
           </div>
         )}
 
-        {/* ── Settings ──────────────────────────────────────────────── */}
         <div className="glass-card p-5 mb-4 border border-black/[0.05]">
           <p className="text-caption mb-3">Settings</p>
           <div className="flex flex-col">
-            {/* Dark mode */}
+            
             <div className="flex items-center justify-between py-3 border-b border-black/5">
               <div className="flex items-center gap-3">
                 {isDarkMode
@@ -157,7 +152,7 @@ export default function Profile() {
               </div>
               <Toggle value={isDarkMode} onChange={toggleDarkMode} />
             </div>
-            {/* Notifications */}
+            
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
                 <Bell size={16} className="text-black/40" />
@@ -168,7 +163,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* ── Sign out ──────────────────────────────────────────────── */}
         <motion.button
           whileHover={shouldReduce ? {} : { backgroundColor: 'rgba(192,32,62,0.05)' }}
           whileTap={shouldReduce ? {} : { scale: 0.98 }}

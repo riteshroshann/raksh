@@ -4,7 +4,7 @@ import { STATUS_LABELS, STATUS_CLASSES } from '../lib/utils';
 
 interface StatusBadgeProps {
   status: VitalStatus;
-  /** Override label text */
+  
   label?: string;
   className?: string;
 }

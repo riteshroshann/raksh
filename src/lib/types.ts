@@ -1,9 +1,9 @@
-// ─── Database entity types (mirrors Supabase schema exactly) ───────────────
+
 
 export interface Profile {
   id: string;
   full_name: string;
-  dob: string;                  // ISO date string
+  dob: string;                  
   sex: 'male' | 'female';
   photo_url: string | null;
   conditions: Condition[];
@@ -36,10 +36,10 @@ export interface VitalLog {
   user_id: string;
   family_member_id: string | null;
   vital_type: VitalType;
-  value_1: number;          // primary value (systolic for BP, reading for others)
-  value_2: number | null;   // secondary value (diastolic for BP)
+  value_1: number;          
+  value_2: number | null;   
   unit: string;
-  logged_at: string;        // ISO timestamp
+  logged_at: string;        
   notes: string | null;
 }
 
@@ -52,7 +52,7 @@ export interface Medicine {
   name: string;
   dosage: string;
   frequency: MedicineFrequency;
-  times: string[];             // e.g. ['morning', 'night']
+  times: string[];             
   food_instruction: 'before' | 'after' | 'with' | 'empty_stomach' | null;
   condition_tag: Condition | null;
   quantity_total: number | null;
@@ -78,8 +78,6 @@ export interface WaitlistEntry {
   created_at: string;
 }
 
-// ─── Domain types ──────────────────────────────────────────────────────────
-
 export type Condition =
   | 'Diabetes'
   | 'Thyroid'
@@ -93,8 +91,6 @@ export type DoseTimeSlot = 'morning' | 'afternoon' | 'evening' | 'night';
 
 export type DoseStatus = 'pending' | 'taken' | 'skipped' | 'missed';
 
-// ─── UI types ──────────────────────────────────────────────────────────────
-
 export interface TodayDose {
   medicine: Medicine;
   slot: DoseTimeSlot;
@@ -105,7 +101,7 @@ export interface TodayDose {
 export interface VitalReading {
   log: VitalLog;
   status: VitalStatus;
-  display: string;            // formatted value string
+  display: string;            
 }
 
 export interface OnboardingState {

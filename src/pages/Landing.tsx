@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, TrendingUp, Pill, FileText, Bell, Users, ChevronRight, Check, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-// ── Phone mockup showing app screens ─────────────────────────────────────────
-
 function PhoneMockup() {
   const [activeTab, setActiveTab] = useState(0);
   const screens = [
@@ -157,20 +155,18 @@ function PhoneMockup() {
 
   return (
     <div className="relative flex items-center justify-center">
-      {/* Ambient glow */}
+      
       <div className="absolute inset-0 bg-[#C0203E]/5 rounded-full blur-3xl scale-110 pointer-events-none" />
 
-      {/* Phone frame */}
       <div
         className="relative w-[300px] h-[590px] rounded-[3rem] overflow-hidden shadow-[0_40px_120px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.06)]"
         style={{ background: 'white' }}
       >
-        {/* Notch bar */}
+        
         <div className="absolute top-0 left-0 right-0 h-8 bg-white z-10 flex items-center justify-center">
           <div className="w-20 h-4 bg-black/[0.06] rounded-full" />
         </div>
 
-        {/* Screen content */}
         <div className="absolute inset-0 overflow-hidden" style={{ paddingTop: 32 }}>
           <AnimatePresence mode="wait">
             <motion.div
@@ -186,7 +182,6 @@ function PhoneMockup() {
           </AnimatePresence>
         </div>
 
-        {/* Bottom nav pill */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[85%] bg-white border border-black/5 rounded-full px-4 py-2.5 flex items-center justify-around shadow-lg z-10">
           {[
             { label: 'Home',  icon: '⌂' },
@@ -207,7 +202,6 @@ function PhoneMockup() {
         </div>
       </div>
 
-      {/* Tab switcher dots */}
       <div className="absolute -bottom-8 flex gap-2">
         {screens.map((_, i) => (
           <button
@@ -229,8 +223,6 @@ function PhoneMockup() {
     </div>
   );
 }
-
-// ── Features ──────────────────────────────────────────────────────────────────
 
 const FEATURES = [
   {
@@ -272,19 +264,15 @@ const HOW_IT_WORKS = [
   { step: '04', title: 'Share with your doctor', desc: 'Generate a pre-visit summary from your entire history in one tap.' },
 ];
 
-// ── Main Landing component ──────────────────────────────────────────────────
-
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-white font-sans">
 
-      {/* ── Navigation ─────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/[0.04]">
         <div className="max-w-6xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
 
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2 no-underline">
             <span className="text-xl" role="img" aria-label="raksh">🌿</span>
             <span className="text-xl font-light tracking-tight text-black" style={{ fontFamily: 'var(--font-display)' }}>
@@ -292,14 +280,12 @@ export default function Landing() {
             </span>
           </Link>
 
-          {/* Desktop nav links */}
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="landing-nav-link">Features</a>
             <a href="#how-it-works" className="landing-nav-link">How it works</a>
             <a href="#security" className="landing-nav-link">Security</a>
           </nav>
 
-          {/* CTA */}
           <div className="hidden md:flex items-center gap-3">
             <Link to="/login" className="text-sm font-medium text-black/60 hover:text-black transition-colors">
               Sign in
@@ -314,7 +300,6 @@ export default function Landing() {
             </Link>
           </div>
 
-          {/* Mobile burger */}
           <button
             className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-black/5"
             onClick={() => setMobileMenuOpen(v => !v)}
@@ -323,7 +308,6 @@ export default function Landing() {
           </button>
         </div>
 
-        {/* Mobile menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -342,13 +326,11 @@ export default function Landing() {
         </AnimatePresence>
       </header>
 
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-5 md:px-8 pt-16 md:pt-24 pb-20 md:pb-32">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
 
-          {/* Left copy */}
           <div className="flex-1 text-center lg:text-left">
-            {/* Badge */}
+            
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-black/[0.06] bg-black/[0.02] text-sm text-black/50 font-medium mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#C0203E]" />
               Built for chronic disease management
@@ -381,7 +363,6 @@ export default function Landing() {
               </a>
             </div>
 
-            {/* Trust signals */}
             <div className="flex items-center gap-6 mt-8 justify-center lg:justify-start">
               <div className="flex flex-col">
                 <span className="text-xl font-semibold text-black">100%</span>
@@ -400,14 +381,12 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Right — phone mockup */}
           <div className="flex-shrink-0 flex items-center justify-center w-full lg:w-auto pb-12 lg:pb-0">
             <PhoneMockup />
           </div>
         </div>
       </section>
 
-      {/* ── Features ───────────────────────────────────────────────────── */}
       <section id="features" className="bg-[#FAFAFA] py-20 md:py-28">
         <div className="max-w-6xl mx-auto px-5 md:px-8">
           <div className="text-center mb-14">
@@ -441,7 +420,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── How it works ───────────────────────────────────────────────── */}
       <section id="how-it-works" className="py-20 md:py-28">
         <div className="max-w-6xl mx-auto px-5 md:px-8">
           <div className="text-center mb-14">
@@ -466,7 +444,7 @@ export default function Landing() {
                 </div>
                 <h3 className="text-base font-semibold text-black mb-2">{step.title}</h3>
                 <p className="text-sm text-black/50 leading-relaxed">{step.desc}</p>
-                {/* connector line on desktop */}
+                
                 {i < 3 && (
                   <div className="hidden lg:block absolute top-4 left-[calc(100%+12px)] w-[calc(100%-24px)] h-[1px] bg-black/[0.06]" />
                 )}
@@ -476,7 +454,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Security / Trust ───────────────────────────────────────────── */}
       <section id="security" className="bg-[#FAFAFA] py-20 md:py-28">
         <div className="max-w-5xl mx-auto px-5 md:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-12">
@@ -522,7 +499,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Final CTA ──────────────────────────────────────────────────── */}
       <section className="py-20 md:py-32">
         <div className="max-w-3xl mx-auto px-5 md:px-8 text-center">
           <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#C0203E] mb-4">Start today</p>
@@ -544,7 +520,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer className="border-t border-black/[0.05] py-10">
         <div className="max-w-6xl mx-auto px-5 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">

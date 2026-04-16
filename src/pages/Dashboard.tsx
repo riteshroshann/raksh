@@ -31,7 +31,6 @@ export default function Dashboard() {
   const latestSugar = sugarLogs[0];
   const sugarStatus = latestSugar ? classifyFastingSugar(latestSugar.value_1) : null;
 
-  // ── AI insight state ──────────────────────────────────────────────────────
   const [aiInsight, setAiInsight] = useState<string>('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState(false);
@@ -64,7 +63,6 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-full bg-white">
 
-      {/* ── Header ──────────────────────────────────────────────── */}
       <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
@@ -94,10 +92,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* ── Main content ─────────────────────────────────────────── */}
       <main className="flex-1 px-6 pb-4">
 
-        {/* Greeting */}
         <div className="mt-4 mb-6 maroon-glow relative">
           <span className="text-caption">Daily report</span>
           <h1 className="text-display text-4xl leading-tight mt-2">
@@ -107,7 +103,6 @@ export default function Dashboard() {
           </h1>
         </div>
 
-        {/* Condition + toggle row */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-1.5">
             <span className="text-base font-medium text-black">Your condition</span>
@@ -131,7 +126,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ── Main stats card ─────────────────────────────────────── */}
         <motion.div
           key={homeView}
           initial={{ opacity: 0, y: 16 }}
@@ -165,7 +159,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* ── AI insight area ─────────────────────────────────── */}
             <AnimatePresence mode="wait">
               {aiLoading ? (
                 <motion.div
@@ -219,7 +212,6 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* AI badge */}
         {(aiInsight || aiLoading) && (
           <div className="flex items-center gap-1.5 mb-5 px-1">
             <Sparkles size={11} className="text-[#C0203E]" />
@@ -227,7 +219,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ── Action cards ────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4">
           <motion.button
             whileHover={shouldReduceMotion ? {} : { y: -2, boxShadow: '0 20px 40px rgba(0,0,0,0.06)' }}

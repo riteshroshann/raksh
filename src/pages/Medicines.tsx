@@ -37,7 +37,6 @@ export default function Medicines() {
   return (
     <div className="flex flex-col min-h-full bg-white">
 
-      {/* ── Header ────────────────────────────────────────────────── */}
       <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
@@ -61,7 +60,6 @@ export default function Medicines() {
 
       <main className="flex-1 px-6 pb-4">
 
-        {/* Title + today label */}
         <div className="flex items-center justify-between mt-4 mb-6">
           <h1 className="text-2xl font-medium text-black tracking-tight">Medicines</h1>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/[0.03] border border-black/[0.03]">
@@ -70,7 +68,6 @@ export default function Medicines() {
           </div>
         </div>
 
-        {/* ── Calendar strip ─────────────────────────────────────── */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3 px-1">
             <span className="text-caption">October 2025</span>
@@ -105,7 +102,6 @@ export default function Medicines() {
           </div>
         </div>
 
-        {/* ── Progress ───────────────────────────────────────────── */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-black">Today's Progress</span>
@@ -125,7 +121,6 @@ export default function Medicines() {
           </p>
         </div>
 
-        {/* ── To take ─────────────────────────────────────────────── */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-5 px-1">
             <span className="text-xl font-medium text-black">To take</span>
@@ -186,7 +181,6 @@ export default function Medicines() {
           </div>
         </div>
 
-        {/* ── Refill Reminders ─────────────────────────────────────── */}
         {lowStock.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-5 px-1">
@@ -221,7 +215,6 @@ export default function Medicines() {
           </div>
         )}
 
-        {/* ── Upcoming Doctor Visit ───────────────────────────────── */}
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-5 px-1">
             <Calendar size={18} className="text-[#C0203E]" />

@@ -1,7 +1,5 @@
 import { type Condition, type VitalStatus, type VitalType } from './types';
 
-// ─── Condition display helpers ────────────────────────────────────────────
-
 export const CONDITION_COLORS: Record<Condition, string> = {
   Diabetes: '#B91C1C',
   Thyroid: '#7C3AED',
@@ -17,8 +15,6 @@ export const CONDITION_BG: Record<Condition, string> = {
   Kidney: '#F0FDFA',
   Hypertension: '#EFF6FF',
 };
-
-// ─── Vital classification ─────────────────────────────────────────────────
 
 export function classifyBP(sys: number, dia: number): VitalStatus {
   if (sys >= 180 || dia >= 120) return 'crisis';
@@ -58,8 +54,6 @@ export function classifyHeartRate(bpm: number): VitalStatus {
   return 'normal';
 }
 
-// ─── Vital metadata ───────────────────────────────────────────────────────
-
 export const VITAL_META: Record<VitalType, { label: string; unit: string; emoji: string }> = {
   blood_pressure:        { label: 'Blood Pressure', unit: 'mmHg', emoji: '🫀' },
   blood_sugar_fasting:   { label: 'Sugar (Fasting)', unit: 'mg/dL', emoji: '🩸' },
@@ -70,8 +64,6 @@ export const VITAL_META: Record<VitalType, { label: string; unit: string; emoji:
   temperature:           { label: 'Temperature', unit: '°F', emoji: '🌡️' },
   spo2:                  { label: 'SpO2', unit: '%', emoji: '💨' },
 };
-
-// ─── Status display ───────────────────────────────────────────────────────
 
 export const STATUS_LABELS: Record<VitalStatus, string> = {
   normal: 'NORMAL',
@@ -88,8 +80,6 @@ export const STATUS_CLASSES: Record<VitalStatus, string> = {
   low:      'badge badge-low',
   crisis:   'badge badge-high pulse-danger',
 };
-
-// ─── Date helpers ─────────────────────────────────────────────────────────
 
 export function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString('en-IN', {
@@ -115,8 +105,6 @@ export function relativeDay(isoString: string): string {
   if (diff === 1) return 'Yesterday';
   return formatDate(isoString);
 }
-
-// ─── Dose time slots ──────────────────────────────────────────────────────
 
 export const SLOT_LABELS = {
   morning:   'Morning',

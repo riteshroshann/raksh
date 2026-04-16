@@ -84,11 +84,9 @@
 }
 
 @layer utilities {
-  /* ── Scrollbar ─────────────────────── */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ── Phone Frame Shell ─────────────── */
   .phone-shell {
     width: 100%;
     max-width: 430px;
@@ -108,7 +106,6 @@
     }
   }
 
-  /* ── Desktop wrapper around phone ── */
   .desktop-stage {
     min-height: 100dvh;
     display: flex;
@@ -124,11 +121,9 @@
     }
   }
 
-  /* ── Legacy app-shell (pages without phone frame) ─── */
   .app-shell { min-height: 100dvh; display: flex; justify-content: center; background: #FAFAFA; }
   .app-content { width: 100%; max-width: 430px; background: var(--bg); min-height: 100dvh; position: relative; display: flex; flex-direction: column; }
 
-  /* ── Glassmorphism cards (mark 12 style) ─── */
   .glass-card {
     background: white;
     border: 1px solid rgba(0,0,0,0.05);
@@ -149,7 +144,6 @@
     border-radius: 9999px;
   }
 
-  /* ── Simple card (lighter) ─── */
   .card {
     background: white;
     border-radius: var(--radius-card);
@@ -157,14 +151,11 @@
     border: 1px solid rgba(0,0,0,0.04);
   }
 
-  /* ── Touch feedback ─── */
   .touch-card { transition: transform 100ms ease, box-shadow 100ms ease; }
   .touch-card:active { transform: scale(0.98); }
 
-  /* ── Bottom sheet ─── */
   .bottom-sheet { border-radius: 20px 20px 0 0; box-shadow: var(--shadow-sheet); }
 
-  /* ── Status badges ─── */
   .badge {
     display: inline-flex; align-items: center;
     padding: 2px 10px; border-radius: var(--radius-pill);
@@ -177,7 +168,6 @@
   .badge-elevated { background: var(--warning-light); color: var(--warning); }
   .badge-crisis { background: #FEF2F2; color: #991B1B; }
 
-  /* ── Skeleton ─── */
   .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -189,7 +179,6 @@
     100% { background-position: -200% 0; }
   }
 
-  /* ── Pill buttons ─── */
   .btn-pill {
     border-radius: var(--radius-pill);
     min-height: 44px;
@@ -216,14 +205,12 @@
   }
   .btn-ghost:hover { background: var(--bg-secondary); }
 
-  /* ── Condition chips ─── */
   .chip-diabetes   { background: #FEF2F2; color: #C0203E; border-color: #FECACA; }
   .chip-thyroid    { background: #F5F3FF; color: #7C3AED; border-color: #DDD6FE; }
   .chip-heart      { background: #FFF7ED; color: #EA580C; border-color: #FED7AA; }
   .chip-kidney     { background: #F0FDFA; color: #0D9488; border-color: #99F6E4; }
   .chip-hypertension { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
 
-  /* ── Text styles (mark 12) ─── */
   .text-display {
     font-family: var(--font-display);
     letter-spacing: -0.04em;
@@ -239,7 +226,6 @@
     color: rgba(0,0,0,0.4);
   }
 
-  /* ── Ambient glow ─── */
   .maroon-glow::after {
     content: '';
     position: absolute;
@@ -252,17 +238,14 @@
     pointer-events: none;
   }
 
-  /* ── Safe area ─── */
   .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
-  /* ── Crisis pulse ─── */
   @keyframes pulse-danger {
     0%, 100% { box-shadow: 0 0 0 0 rgba(192,32,62,0.4); }
     50% { box-shadow: 0 0 0 8px rgba(192,32,62,0); }
   }
   .pulse-danger { animation: pulse-danger 1.5s ease-in-out infinite; }
 
-  /* ── Desktop landing page ─── */
   .landing-nav-link {
     font-size: 15px;
     font-weight: 500;
@@ -286,7 +269,6 @@
     border-color: rgba(192,32,62,0.15);
   }
 
-  /* ── Shimmer ─── */
   .shimmer { position: relative; overflow: hidden; }
   .shimmer::after {
     content: '';

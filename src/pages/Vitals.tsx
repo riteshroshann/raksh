@@ -49,7 +49,6 @@ export default function Vitals() {
   return (
     <div className="flex flex-col min-h-full bg-white">
 
-      {/* ── Header ────────────────────────────────────────────────── */}
       <header className="px-6 pt-10 pb-4 flex items-center justify-between bg-white sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
@@ -73,12 +72,10 @@ export default function Vitals() {
 
       <main className="flex-1 px-6 pb-4">
 
-        {/* Title */}
         <div className="flex items-center justify-between mt-4 mb-6">
           <h1 className="text-2xl font-medium text-black tracking-tight">Vitals</h1>
         </div>
 
-        {/* ── Condition chips ──────────────────────────────────────── */}
         <div className="mb-6">
           <div className="flex items-center justify-between ml-1 mb-4">
             <span className="text-caption">Active Conditions</span>
@@ -108,7 +105,6 @@ export default function Vitals() {
           </div>
         </div>
 
-        {/* ── Daily Logs grid ──────────────────────────────────────── */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-5 px-1">
             <div className="flex items-center gap-2">
@@ -141,7 +137,6 @@ export default function Vitals() {
             ))}
           </div>
 
-          {/* Add log dashed button */}
           <motion.button
             whileHover={shouldReduce ? {} : { backgroundColor: 'rgba(0,0,0,0.02)' }}
             whileTap={shouldReduce ? {} : { scale: 0.98 }}
@@ -154,7 +149,6 @@ export default function Vitals() {
           </motion.button>
         </div>
 
-        {/* ── Report Trends ────────────────────────────────────────── */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-5 px-1">
             <Activity size={18} className="text-black/20" />
@@ -181,7 +175,6 @@ export default function Vitals() {
           </div>
         </div>
 
-        {/* ── Upcoming Doctor Visit ───────────────────────────────── */}
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-5 px-1">
             <Calendar size={18} className="text-[#C0203E]" />

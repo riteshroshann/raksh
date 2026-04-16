@@ -59,7 +59,6 @@ export default function Onboarding() {
 
     if (profileErr) { setError(profileErr.message); setLoading(false); return; }
 
-    // Write family member if provided
     if (state.has_family && state.family_member.name) {
       const fm = {
         owner_id: user.id,
@@ -79,14 +78,13 @@ export default function Onboarding() {
   }
 
   const step1Valid = state.full_name.trim().length > 1 && state.dob && state.sex;
-  const step2Valid = true; // conditions optional
+  const step2Valid = true; 
   const step3Valid = !state.has_family || Boolean(state.family_member.name);
 
   return (
     <div className="app-shell min-h-screen">
       <div className="app-content bg-white px-5 pt-10 pb-12 flex flex-col">
 
-        {/* Progress dots */}
         <div className="flex gap-2 mb-10">
           {[1, 2, 3].map(n => (
             <div
@@ -101,7 +99,7 @@ export default function Onboarding() {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* ── Step 1 ── */}
+          
           {state.step === 1 && (
             <motion.div
               key="step1"
@@ -175,7 +173,6 @@ export default function Onboarding() {
             </motion.div>
           )}
 
-          {/* ── Step 2 ── */}
           {state.step === 2 && (
             <motion.div
               key="step2"
@@ -240,7 +237,6 @@ export default function Onboarding() {
             </motion.div>
           )}
 
-          {/* ── Step 3 ── */}
           {state.step === 3 && (
             <motion.div
               key="step3"

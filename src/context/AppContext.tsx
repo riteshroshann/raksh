@@ -9,24 +9,20 @@ import React, {
 import { supabase } from '../lib/supabase';
 import type { AppUser, FamilyMember, Profile } from '../lib/types';
 
-// ─── Types ────────────────────────────────────────────────────────────────
-
 interface AppContextValue {
-  /** Authenticated Supabase user + profile */
+  
   user: AppUser | null;
-  /** Currently viewed profile (self or family member) */
+  
   activeMemberId: string | null;
   setActiveMemberId: (id: string | null) => void;
   familyMembers: FamilyMember[];
-  /** Refresh profile data from DB */
+  
   refreshProfile: () => Promise<void>;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   authLoading: boolean;
   signOut: () => Promise<void>;
 }
-
-// ─── Context ──────────────────────────────────────────────────────────────
 
 const AppContext = createContext<AppContextValue | null>(null);
 
@@ -35,8 +31,6 @@ export function useAppContext(): AppContextValue {
   if (!ctx) throw new Error('useAppContext must be used within AppProvider');
   return ctx;
 }
-
-// ─── Provider ─────────────────────────────────────────────────────────────
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -47,7 +41,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem('raksh-dark-mode') === 'true';
   });
 
-  // Apply dark mode class globally
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
     localStorage.setItem('raksh-dark-mode', String(isDarkMode));
@@ -57,7 +50,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsDarkMode(prev => !prev);
   }, []);
 
-  // Fetch profile + family members for a given user ID
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     const { data, error } = await supabase
       .from('profiles')
@@ -88,7 +80,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setFamilyMembers(members);
   }, [user, fetchProfile, fetchFamilyMembers]);
 
-  // Bootstrap auth state
   useEffect(() => {
     let mounted = true;
 

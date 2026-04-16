@@ -14,7 +14,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ── Google OAuth ───────────────────────────────────────────────────────
   async function handleGoogle() {
     setLoading(true);
     setError(null);
@@ -26,7 +25,6 @@ export default function Login() {
     setLoading(false);
   }
 
-  // ── GitHub OAuth ───────────────────────────────────────────────────────
   async function handleGitHub() {
     setLoading(true);
     setError(null);
@@ -38,7 +36,6 @@ export default function Login() {
     setLoading(false);
   }
 
-  // ── Magic link ─────────────────────────────────────────────────────────
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
@@ -56,7 +53,6 @@ export default function Login() {
     setLoading(false);
   }
 
-  // ── OTP verify ─────────────────────────────────────────────────────────
   async function handleOtpVerify() {
     const token = otp.join('');
     if (token.length < 6) return;
@@ -71,7 +67,7 @@ export default function Login() {
       setError(err.message);
       setOtp(['', '', '', '', '', '']);
     } else if (data.session) {
-      // Check if profile exists
+      
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')
@@ -87,11 +83,11 @@ export default function Login() {
     const next = [...otp];
     next[index] = value.slice(-1);
     setOtp(next);
-    // Auto-advance
+    
     if (value && index < 5) {
       document.getElementById(`otp-${index + 1}`)?.focus();
     }
-    // Auto-submit
+    
     if (index === 5 && value) {
       const full = [...next].join('');
       if (full.length === 6) handleOtpVerify();
@@ -104,13 +100,10 @@ export default function Login() {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────
-
   return (
     <div className="app-shell min-h-screen">
       <div className="app-content bg-white px-5 pt-8 pb-12 flex flex-col">
 
-        {/* Back link */}
         <div className="flex items-center mb-10">
           <Link
             to="/"
@@ -126,7 +119,6 @@ export default function Login() {
           </span>
         </div>
 
-        {/* Heading */}
         <h1
           className="text-3xl text-[var(--text-primary)] mb-2"
           style={{ fontFamily: 'var(--font-display)' }}
@@ -137,7 +129,6 @@ export default function Login() {
           Sign in to manage your family's health records
         </p>
 
-        {/* Error */}
         <AnimatePresence>
           {error && (
             <motion.div
@@ -161,7 +152,7 @@ export default function Login() {
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-3"
             >
-              {/* Google */}
+              
               <button
                 onClick={handleGoogle}
                 disabled={loading}
@@ -177,7 +168,6 @@ export default function Login() {
                 Continue with Google
               </button>
 
-              {/* GitHub */}
               <button
                 onClick={handleGitHub}
                 disabled={loading}
@@ -188,14 +178,12 @@ export default function Login() {
                 Continue with GitHub
               </button>
 
-              {/* Divider */}
               <div className="flex items-center gap-4 my-2">
                 <div className="flex-1 h-px bg-[var(--border)]" />
                 <span className="text-xs text-[var(--text-muted)]">or</span>
                 <div className="flex-1 h-px bg-[var(--border)]" />
               </div>
 
-              {/* Magic link */}
               <form onSubmit={handleMagicLink} className="flex flex-col gap-3">
                 <label className="flex flex-col gap-1.5">
                   <span className="text-xs font-medium text-[var(--text-secondary)]">Email address</span>
@@ -252,7 +240,6 @@ export default function Login() {
                 We sent a 6-digit code to <strong className="text-[var(--text-primary)]">{email}</strong>
               </p>
 
-              {/* OTP inputs */}
               <div className="flex gap-3 mb-8">
                 {otp.map((digit, i) => (
                   <input

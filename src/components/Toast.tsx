@@ -66,7 +66,6 @@ export function Toast({ open, message, variant = 'success', onClose, duration = 
   );
 }
 
-// Hook for managing toast state
 export function useToast() {
   const [state, setState] = React.useState<{
     open: boolean;

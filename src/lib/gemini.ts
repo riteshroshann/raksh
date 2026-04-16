@@ -1,18 +1,10 @@
-/**
- * Gemini API client for Raksh.
- * Endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent
- */
-
 const GEMINI_ENDPOINT =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
 
-// ── Core API call ─────────────────────────────────────────────────────────────
-
 export async function geminiGenerate(prompt: string): Promise<string> {
   if (!API_KEY) {
-    console.warn('[gemini] VITE_GEMINI_API_KEY not set');
     return 'AI insights unavailable — API key not configured.';
   }
 
@@ -34,21 +26,10 @@ export async function geminiGenerate(prompt: string): Promise<string> {
   }
 
   const json = await res.json();
-  const text: string =
-    json?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const text: string = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
   return text.trim();
 }
 
-// ── Raksh-specific prompt builders ───────────────────────────────────────────
-
-/**
- * Generate a contextual health insight for the dashboard.
- * @param condition  e.g. "Diabetes"
- * @param vitalLabel e.g. "Fasting Blood Sugar"
- * @param value      e.g. 98
- * @param unit       e.g. "mg/dL"
- * @param status     e.g. "normal" | "high" | "low"
- */
 export async function generateHealthInsight(params: {
   condition: string;
   vitalLabel: string;
@@ -72,9 +53,6 @@ Write a SHORT (2-3 sentences max), warm, non-diagnostic insight for the user.
   return geminiGenerate(prompt);
 }
 
-/**
- * Generate a pre-visit doctor summary from the user's current medicines.
- */
 export async function generatePreVisitSummary(params: {
   medicines: Array<{ name: string; dosage: string; frequency: string; condition: string }>;
   conditions: string[];
@@ -102,9 +80,6 @@ Write a concise, professional pre-visit summary (4-6 sentences) that:
   return geminiGenerate(prompt);
 }
 
-/**
- * Analyze a reported symptom and give contextual guidance.
- */
 export async function analyzeSymptom(params: {
   symptom: string;
   conditions: string[];
