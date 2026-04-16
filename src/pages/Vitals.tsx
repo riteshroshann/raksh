@@ -5,34 +5,34 @@ import { useVitals } from '../hooks/useVitals';
 import type { VitalType } from '../lib/types';
 
 const VITAL_TABS: { type: VitalType; label: string; unit: string; fields: string[]; color: string }[] = [
-  { type: 'blood_sugar_fasting',  label: 'Fasting sugar',    unit: 'mg/dL', fields: ['Glucose'],             color: '#C0203E' },
-  { type: 'blood_sugar_postmeal', label: 'Post-meal sugar',  unit: 'mg/dL', fields: ['Glucose'],             color: '#EA580C' },
-  { type: 'blood_pressure',       label: 'Blood pressure',   unit: 'mmHg',  fields: ['Systolic','Diastolic'], color: '#7C3AED' },
-  { type: 'heart_rate',           label: 'Heart rate',       unit: 'bpm',   fields: ['BPM'],                 color: '#2563EB' },
-  { type: 'weight',               label: 'Weight',           unit: 'kg',    fields: ['Weight'],               color: '#0D9488' },
-  { type: 'spo2',                 label: 'SpO2',             unit: '%',     fields: ['Oxygen'],               color: '#D97706' },
+  { type: 'blood_sugar_fasting',  label: 'Fasting sugar',    unit: 'mg/dL', fields: ['Glucose'],              color: '#C0203E' },
+  { type: 'blood_sugar_postmeal', label: 'Post-meal sugar',  unit: 'mg/dL', fields: ['Glucose'],              color: '#C0203E' },
+  { type: 'blood_pressure',       label: 'Blood pressure',   unit: 'mmHg',  fields: ['Systolic','Diastolic'],  color: '#C0203E' },
+  { type: 'heart_rate',           label: 'Heart rate',       unit: 'bpm',   fields: ['BPM'],                  color: '#C0203E' },
+  { type: 'weight',               label: 'Weight',           unit: 'kg',    fields: ['Weight'],                color: '#C0203E' },
+  { type: 'spo2',                 label: 'SpO2',             unit: '%',     fields: ['Oxygen'],                color: '#C0203E' },
 ];
 
 function classify(type: VitalType, v1: number, v2?: number | null): { label: string; color: string; bg: string } {
   if (type === 'blood_sugar_fasting') {
-    if (v1 < 70)   return { label: 'Below range', color: '#2563EB', bg: '#DBEAFE' };
+    if (v1 < 70)   return { label: 'Below range', color: '#92400E', bg: '#FFF7ED' };
     if (v1 <= 100) return { label: 'Normal',      color: '#15803D', bg: '#DCFCE7' };
     if (v1 <= 125) return { label: 'Elevated',    color: '#D97706', bg: '#FEF3C7' };
-    return               { label: 'Above range',  color: '#DC2626', bg: '#FEE2E2' };
+    return               { label: 'Above range',  color: '#C0203E', bg: '#FFF0F2' };
   }
   if (type === 'blood_pressure') {
     const sys = v1, dia = v2 ?? 0;
-    if (sys < 120 && dia < 80) return { label: 'Normal',   color: '#15803D', bg: '#DCFCE7' };
-    if (sys < 130 && dia < 80) return { label: 'Elevated', color: '#D97706', bg: '#FEF3C7' };
-    return                          { label: 'Above range',color: '#DC2626', bg: '#FEE2E2' };
+    if (sys < 120 && dia < 80) return { label: 'Normal',     color: '#15803D', bg: '#DCFCE7' };
+    if (sys < 130 && dia < 80) return { label: 'Elevated',   color: '#D97706', bg: '#FEF3C7' };
+    return                          { label: 'Above range',  color: '#C0203E', bg: '#FFF0F2' };
   }
   if (type === 'heart_rate') {
-    if (v1 < 60)   return { label: 'Below range', color: '#2563EB', bg: '#DBEAFE' };
+    if (v1 < 60)   return { label: 'Below range', color: '#92400E', bg: '#FFF7ED' };
     if (v1 <= 100) return { label: 'Normal',      color: '#15803D', bg: '#DCFCE7' };
-    return               { label: 'Above range',  color: '#DC2626', bg: '#FEE2E2' };
+    return               { label: 'Above range',  color: '#C0203E', bg: '#FFF0F2' };
   }
   if (type === 'spo2') {
-    if (v1 < 95) return { label: 'Below range', color: '#DC2626', bg: '#FEE2E2' };
+    if (v1 < 95) return { label: 'Below range', color: '#C0203E', bg: '#FFF0F2' };
     return             { label: 'Normal',       color: '#15803D', bg: '#DCFCE7' };
   }
   return { label: 'Logged', color: '#6B7280', bg: '#F9FAFB' };

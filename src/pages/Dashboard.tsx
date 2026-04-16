@@ -8,8 +8,8 @@ import { useMedicines } from '../hooks/useMedicines';
 const STATUS: Record<string, { label: string; color: string; bg: string }> = {
   normal:   { label: 'Normal',       color: '#15803D', bg: '#DCFCE7' },
   elevated: { label: 'Elevated',     color: '#D97706', bg: '#FEF3C7' },
-  high:     { label: 'Above range',  color: '#DC2626', bg: '#FEE2E2' },
-  low:      { label: 'Below range',  color: '#2563EB', bg: '#DBEAFE' },
+  high:     { label: 'Above range',  color: '#C0203E', bg: '#FFF0F2' },
+  low:      { label: 'Below range',  color: '#92400E', bg: '#FFF7ED' },
 };
 
 function classifyBG(v: number): string {
@@ -66,7 +66,7 @@ export default function Dashboard() {
           <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Fasting blood sugar</p>
           <button
             onClick={() => navigate('/vitals')}
-            style={{ fontSize: 12, fontWeight: 500, color: '#2563EB', background: 'none', border: 'none', padding: 0 }}
+            style={{ fontSize: 12, fontWeight: 500, color: '#C0203E', background: 'none', border: 'none', padding: 0 }}
           >
             View all
           </button>
@@ -91,7 +91,7 @@ export default function Dashboard() {
               </span>
             )}
             <div style={{ marginLeft: 'auto', marginBottom: 4 }}>
-              {trend === 'up'   && <TrendingUp  size={18} style={{ color: '#DC2626' }} />}
+              {trend === 'up'   && <TrendingUp  size={18} style={{ color: '#C0203E' }} />}
               {trend === 'down' && <TrendingDown size={18} style={{ color: '#15803D' }} />}
               {trend === 'flat' && <Minus        size={18} style={{ color: '#9CA3AF' }} />}
             </div>
@@ -115,7 +115,7 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-2xl border p-4" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <Activity size={13} style={{ color: '#7C3AED' }} />
+            <Activity size={13} style={{ color: '#C0203E' }} />
             <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Heart rate</p>
           </div>
           <p style={{ fontSize: 24, fontWeight: 300, color: '#111827', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
@@ -131,7 +131,7 @@ export default function Dashboard() {
             <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Today's medicines</p>
             <button
               onClick={() => navigate('/medicines')}
-              style={{ fontSize: 12, fontWeight: 500, color: '#2563EB', background: 'none', border: 'none', padding: 0 }}
+              style={{ fontSize: 12, fontWeight: 500, color: '#C0203E', background: 'none', border: 'none', padding: 0 }}
             >
               View all
             </button>
@@ -143,7 +143,7 @@ export default function Dashboard() {
                 className="flex-shrink-0 flex items-center gap-2 rounded-xl px-3 py-2 bg-white border"
                 style={{ borderColor: 'rgba(0,0,0,0.07)' }}
               >
-                <Pill size={12} style={{ color: '#7C3AED' }} />
+                <Pill size={12} style={{ color: '#C0203E' }} />
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 500, color: '#111827', whiteSpace: 'nowrap' }}>{dose.medicine.name}</p>
                   <p style={{ fontSize: 10, color: '#9CA3AF', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{dose.slot}</p>
@@ -178,7 +178,7 @@ export default function Dashboard() {
           <button
             onClick={() => navigate('/medicines')}
             className="mt-4 w-full text-center transition-colors"
-            style={{ fontSize: 14, fontWeight: 500, color: '#2563EB', background: 'none', border: 'none', padding: 0 }}
+            style={{ fontSize: 14, fontWeight: 500, color: '#C0203E', background: 'none', border: 'none', padding: 0 }}
           >
             Manage all medicines
           </button>

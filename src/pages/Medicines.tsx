@@ -81,7 +81,7 @@ export default function Medicines() {
           <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${total > 0 ? (taken / total) * 100 : 0}%`, background: '#0D9488' }}
+              style={{ width: `${total > 0 ? (taken / total) * 100 : 0}%`, background: '#C0203E' }}
             />
           </div>
           <span style={{ fontSize: 13, fontWeight: 500, color: '#374151', flexShrink: 0 }}>{taken}/{total} taken</span>
@@ -163,8 +163,8 @@ export default function Medicines() {
               <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
                 {medicines.map(med => (
                   <div key={med.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/50 transition-colors group">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#F5F3FF' }}>
-                      <Pill size={16} style={{ color: '#7C3AED' }} />
+                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#FFF0F2' }}>
+                      <Pill size={16} style={{ color: '#C0203E' }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{med.name}</p>
