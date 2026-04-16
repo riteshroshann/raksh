@@ -1,294 +1,198 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, Activity, Sparkles, RefreshCw, HeartPulse, Pill, TrendingUp, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Plus, TrendingUp, TrendingDown, Minus, HeartPulse, Pill, Activity } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useVitals } from '../hooks/useVitals';
 import { useMedicines } from '../hooks/useMedicines';
-import { generateHealthInsight } from '../lib/gemini';
+
+const STATUS: Record<string, { label: string; color: string; bg: string }> = {
+  normal:   { label: 'Normal',       color: '#15803D', bg: '#DCFCE7' },
+  elevated: { label: 'Elevated',     color: '#D97706', bg: '#FEF3C7' },
+  high:     { label: 'Above range',  color: '#DC2626', bg: '#FEE2E2' },
+  low:      { label: 'Below range',  color: '#2563EB', bg: '#DBEAFE' },
+};
 
 function classifyBG(v: number): string {
-  if (v < 70) return 'low';
+  if (v < 70)   return 'low';
   if (v <= 100) return 'normal';
   if (v <= 125) return 'elevated';
   return 'high';
 }
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  normal:   { bg: '#F0FDF4', text: '#16A34A', label: 'Normal' },
-  elevated: { bg: '#FFFBEB', text: '#D97706', label: 'Elevated' },
-  high:     { bg: '#FEF2F2', text: '#DC2626', label: 'High' },
-  low:      { bg: '#EFF6FF', text: '#2563EB', label: 'Low' },
-};
-
-function StatCard({ label, value, unit, icon: Icon, color }: { label: string; value: string; unit: string; icon: React.ElementType; color: string }) {
-  return (
-    <div className="bg-white rounded-2xl p-5 border border-black/[0.05] flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: color + '18' }}>
-          <Icon size={15} style={{ color }} />
-        </div>
-      </div>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-3xl font-light text-gray-900 tracking-tight">{value}</span>
-        <span className="text-xs text-gray-400 font-medium">{unit}</span>
-      </div>
-    </div>
-  );
+function trendDir(logs: { value_1: number }[]): 'up' | 'down' | 'flat' {
+  if (logs.length < 2) return 'flat';
+  const diff = logs[0].value_1 - logs[1].value_1;
+  if (diff > 2)  return 'up';
+  if (diff < -2) return 'down';
+  return 'flat';
 }
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAppContext();
 
-  const userId  = user?.id;
-  const profile = user?.profile;
+  const userId    = user?.id;
+  const profile   = user?.profile;
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
 
   const { logs: sugarLogs, loading: sugarLoading } = useVitals(userId, 'blood_sugar_fasting', null, 7);
-  const { logs: bpLogs } = useVitals(userId, 'blood_pressure', null, 1);
-  const { logs: hrLogs } = useVitals(userId, 'heart_rate', null, 1);
-  const { todayDoses, medicines } = useMedicines(userId, null);
+  const { logs: bpLogs }  = useVitals(userId, 'blood_pressure', null, 1);
+  const { logs: hrLogs }  = useVitals(userId, 'heart_rate', null, 1);
+  const { todayDoses }    = useMedicines(userId, null);
 
-  const latestSugar = sugarLogs[0];
-  const latestBP    = bpLogs[0];
-  const latestHR    = hrLogs[0];
+  const latestSugar  = sugarLogs[0];
+  const latestBP     = bpLogs[0];
+  const latestHR     = hrLogs[0];
+  const sugarStatus  = latestSugar ? classifyBG(latestSugar.value_1) : null;
+  const statusInfo   = sugarStatus ? STATUS[sugarStatus] : null;
+  const trend        = trendDir(sugarLogs);
+  const pending      = todayDoses.filter(d => d.status === 'pending').slice(0, 3);
 
-  const sugarStatus = latestSugar ? classifyBG(latestSugar.value_1) : null;
-  const statusStyle = sugarStatus ? STATUS_STYLES[sugarStatus] : null;
-
-  const taken  = todayDoses.filter(d => d.status === 'taken').length;
-  const total  = todayDoses.length;
-  const pending = todayDoses.filter(d => d.status === 'pending');
-
-  const [aiInsight, setAiInsight] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError,   setAiError]   = useState(false);
-
-  const fetchInsight = useCallback(async () => {
-    if (!latestSugar || !sugarStatus) return;
-    setAiLoading(true);
-    setAiError(false);
-    try {
-      const text = await generateHealthInsight({
-        condition: profile?.conditions?.[0] ?? 'general health',
-        vitalLabel: 'Fasting Blood Sugar',
-        value: latestSugar.value_1,
-        unit: 'mg/dL',
-        status: sugarStatus,
-      });
-      setAiInsight(text);
-    } catch {
-      setAiError(true);
-    } finally {
-      setAiLoading(false);
-    }
-  }, [latestSugar, sugarStatus, profile]);
-
-  useEffect(() => {
-    if (latestSugar && !aiInsight && !aiLoading) fetchInsight();
-  }, [latestSugar]);
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const hour      = new Date().getHours();
+  const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const dateStr   = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <div className="p-5 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-5 lg:p-8 max-w-3xl mx-auto pb-24 lg:pb-12">
 
-      <div className="mb-8">
-        <p className="text-sm text-gray-400 font-medium">{greeting}</p>
-        <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mt-0.5">
-          {firstName}, here's your health overview
-        </h1>
+      <div className="mb-7">
+        <p style={{ fontSize: 14, fontWeight: 500, color: '#6B7280' }}>{greeting}</p>
+        <h1 style={{ fontSize: 22, fontWeight: 500, color: '#111827', marginTop: 4 }}>{firstName}</h1>
+        <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>{dateStr}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
-
-        <div className="lg:col-span-2 space-y-5">
-
-          <div className="bg-white rounded-3xl border border-black/[0.05] p-6 lg:p-7">
-            <div className="flex items-start justify-between mb-5">
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Fasting Blood Sugar</p>
-                <div className="flex items-baseline gap-2 mt-2">
-                  {sugarLoading ? (
-                    <div className="h-10 w-28 bg-gray-100 rounded-xl animate-pulse" />
-                  ) : latestSugar ? (
-                    <>
-                      <span className="text-5xl font-light text-gray-900 tracking-tight">{latestSugar.value_1}</span>
-                      <span className="text-sm text-gray-400 font-medium">mg/dL</span>
-                      {statusStyle && (
-                        <span className="ml-2 text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: statusStyle.bg, color: statusStyle.text }}>
-                          {statusStyle.label}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-2xl text-gray-300 font-light">No readings yet</span>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/vitals')}
-                className="flex items-center gap-1.5 text-xs font-semibold text-[#C0203E] hover:underline"
-              >
-                View all <ChevronRight size={14} />
-              </button>
-            </div>
-
-            <div className="border-t border-gray-50 pt-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles size={14} className="text-[#C0203E]" />
-                <span className="text-xs font-bold text-[#C0203E] uppercase tracking-wider">Raksh AI Insight</span>
-                {(aiInsight || aiLoading) && (
-                  <button onClick={fetchInsight} className="ml-auto text-gray-300 hover:text-gray-500 transition-colors">
-                    <RefreshCw size={12} />
-                  </button>
-                )}
-              </div>
-              <AnimatePresence mode="wait">
-                {aiLoading ? (
-                  <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                    <div className="w-3.5 h-3.5 rounded-full border-2 border-[#C0203E] border-t-transparent animate-spin" />
-                    <span className="text-sm text-gray-400">Analyzing your readings…</span>
-                  </motion.div>
-                ) : aiInsight ? (
-                  <motion.p key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-gray-600 leading-relaxed">
-                    {aiInsight}
-                  </motion.p>
-                ) : aiError ? (
-                  <motion.p key="error" className="text-sm text-gray-400 italic">AI insights unavailable right now.</motion.p>
-                ) : (
-                  <motion.p key="empty" className="text-sm text-gray-400">
-                    {latestSugar ? 'Generating insight…' : 'Log your first vital reading to unlock AI-powered health insights.'}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard
-              label="Blood Pressure"
-              value={latestBP ? `${latestBP.value_1}/${latestBP.value_2}` : '--/--'}
-              unit="mmHg"
-              icon={HeartPulse}
-              color="#C0203E"
-            />
-            <StatCard
-              label="Heart Rate"
-              value={latestHR ? String(latestHR.value_1) : '--'}
-              unit="bpm"
-              icon={Activity}
-              color="#7C3AED"
-            />
-            <StatCard
-              label="Medicines"
-              value={`${taken}/${total}`}
-              unit="taken today"
-              icon={Pill}
-              color="#0D9488"
-            />
-          </div>
-
-          {sugarLogs.length > 1 && (
-            <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Last 7 Readings</p>
-              <div className="flex items-end gap-2 h-20">
-                {sugarLogs.slice(0, 7).reverse().map((log, i) => {
-                  const st = STATUS_STYLES[classifyBG(log.value_1)];
-                  const max = Math.max(...sugarLogs.map(l => l.value_1));
-                  const pct = Math.max(0.15, log.value_1 / max);
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="text-[9px] text-gray-400">{log.value_1}</span>
-                      <div
-                        className="w-full rounded-t-lg transition-all"
-                        style={{ height: `${pct * 56}px`, background: st.text + '33', borderTop: `2px solid ${st.text}` }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+      <div className="bg-white rounded-2xl border p-5 mb-4" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+        <div className="flex items-center justify-between mb-1">
+          <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Fasting blood sugar</p>
+          <button
+            onClick={() => navigate('/vitals')}
+            style={{ fontSize: 12, fontWeight: 500, color: '#2563EB', background: 'none', border: 'none', padding: 0 }}
+          >
+            View all
+          </button>
         </div>
 
-        <div className="space-y-5">
+        {sugarLoading ? (
+          <div className="skeleton" style={{ height: 56, marginTop: 12, borderRadius: 12 }} />
+        ) : latestSugar ? (
+          <div className="flex items-end gap-3 mt-3">
+            <span style={{ fontSize: 48, fontWeight: 300, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              {latestSugar.value_1}
+            </span>
+            <div style={{ marginBottom: 4 }}>
+              <p style={{ fontSize: 12, color: '#9CA3AF' }}>mg/dL</p>
+              <p style={{ fontSize: 11, color: '#9CA3AF' }}>
+                {new Date(latestSugar.logged_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+              </p>
+            </div>
+            {statusInfo && (
+              <span style={{ marginBottom: 4, fontSize: 12, fontWeight: 500, borderRadius: 6, padding: '3px 10px', background: statusInfo.bg, color: statusInfo.color }}>
+                {statusInfo.label}
+              </span>
+            )}
+            <div style={{ marginLeft: 'auto', marginBottom: 4 }}>
+              {trend === 'up'   && <TrendingUp  size={18} style={{ color: '#DC2626' }} />}
+              {trend === 'down' && <TrendingDown size={18} style={{ color: '#15803D' }} />}
+              {trend === 'flat' && <Minus        size={18} style={{ color: '#9CA3AF' }} />}
+            </div>
+          </div>
+        ) : (
+          <p style={{ marginTop: 12, fontSize: 18, fontWeight: 300, color: '#D1D5DB' }}>No readings yet</p>
+        )}
+      </div>
 
-          {pending.length > 0 && (
-            <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Due Now</p>
-              <div className="space-y-3">
-                {pending.slice(0, 4).map((dose, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Pill size={14} className="text-amber-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{dose.medicine.name}</p>
-                      <p className="text-xs text-gray-400">{dose.medicine.dosage} · {dose.slot}</p>
-                    </div>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-white rounded-2xl border p-4" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+          <div className="flex items-center gap-1.5 mb-2">
+            <HeartPulse size={13} style={{ color: '#C0203E' }} />
+            <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Blood pressure</p>
+          </div>
+          <p style={{ fontSize: 24, fontWeight: 300, color: '#111827', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+            {latestBP ? `${latestBP.value_1}/${latestBP.value_2}` : '--/--'}
+          </p>
+          <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>mmHg</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border p-4" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Activity size={13} style={{ color: '#7C3AED' }} />
+            <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Heart rate</p>
+          </div>
+          <p style={{ fontSize: 24, fontWeight: 300, color: '#111827', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+            {latestHR ? latestHR.value_1 : '--'}
+          </p>
+          <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>bpm</p>
+        </div>
+      </div>
+
+      {todayDoses.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2.5">
+            <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Today's medicines</p>
+            <button
+              onClick={() => navigate('/medicines')}
+              style={{ fontSize: 12, fontWeight: 500, color: '#2563EB', background: 'none', border: 'none', padding: 0 }}
+            >
+              View all
+            </button>
+          </div>
+          <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+            {todayDoses.map((dose, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 flex items-center gap-2 rounded-xl px-3 py-2 bg-white border"
+                style={{ borderColor: 'rgba(0,0,0,0.07)' }}
+              >
+                <Pill size={12} style={{ color: '#7C3AED' }} />
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 500, color: '#111827', whiteSpace: 'nowrap' }}>{dose.medicine.name}</p>
+                  <p style={{ fontSize: 10, color: '#9CA3AF', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{dose.slot}</p>
+                </div>
+                {dose.status === 'taken' && (
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: '#DCFCE7' }}>
+                    <span style={{ fontSize: 9, color: '#15803D' }}>✓</span>
                   </div>
-                ))}
+                )}
               </div>
-              <button
-                onClick={() => navigate('/medicines')}
-                className="mt-4 w-full text-center text-xs font-semibold text-[#C0203E] hover:underline"
-              >
-                View all medicines →
-              </button>
-            </div>
-          )}
-
-          <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Quick Actions</p>
-            <div className="space-y-2">
-              <button
-                onClick={() => navigate('/vitals')}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 hover:bg-[#C0203E]/5 hover:border-[#C0203E]/20 border border-transparent transition-all text-left"
-              >
-                <div className="w-8 h-8 bg-[#C0203E]/10 rounded-xl flex items-center justify-center">
-                  <TrendingUp size={14} className="text-[#C0203E]" />
-                </div>
-                <span className="text-sm font-medium text-gray-700">Log a vital reading</span>
-              </button>
-              <button
-                onClick={() => navigate('/medicines')}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 hover:bg-purple-50 border border-transparent hover:border-purple-100 transition-all text-left"
-              >
-                <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center">
-                  <Pill size={14} className="text-purple-500" />
-                </div>
-                <span className="text-sm font-medium text-gray-700">Add a medicine</span>
-              </button>
-              <button
-                onClick={() => navigate('/vault')}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 hover:bg-teal-50 border border-transparent hover:border-teal-100 transition-all text-left"
-              >
-                <div className="w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center">
-                  <Calendar size={14} className="text-teal-500" />
-                </div>
-                <span className="text-sm font-medium text-gray-700">Upload a report</span>
-              </button>
-            </div>
+            ))}
           </div>
-
-          {profile?.conditions && profile.conditions.length > 0 && (
-            <div className="bg-white rounded-3xl border border-black/[0.05] p-6">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">My Conditions</p>
-              <div className="flex flex-wrap gap-2">
-                {profile.conditions.map(c => (
-                  <span key={c} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#C0203E]/8 text-[#C0203E] border border-[#C0203E]/15">
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      </div>
+      )}
+
+      {pending.length > 0 && (
+        <div className="bg-white rounded-2xl border p-5 mb-4" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+          <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', marginBottom: 12 }}>Due now</p>
+          <div className="space-y-3">
+            {pending.map((dose, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#FEF3C7' }}>
+                  <Pill size={13} style={{ color: '#D97706' }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p style={{ fontSize: 14, fontWeight: 500, color: '#111827' }} className="truncate">{dose.medicine.name}</p>
+                  <p style={{ fontSize: 12, color: '#9CA3AF', textTransform: 'capitalize' }}>{dose.medicine.dosage} · {dose.slot}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => navigate('/medicines')}
+            className="mt-4 w-full text-center transition-colors"
+            style={{ fontSize: 14, fontWeight: 500, color: '#2563EB', background: 'none', border: 'none', padding: 0 }}
+          >
+            Manage all medicines
+          </button>
+        </div>
+      )}
+
+      <button
+        onClick={() => navigate('/vitals')}
+        title="Log a reading"
+        className="fixed bottom-20 right-5 lg:bottom-8 lg:right-8 w-14 h-14 rounded-full text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40"
+        style={{ background: '#C0203E', boxShadow: '0 4px 20px rgba(192,32,62,0.35)' }}
+      >
+        <Plus size={22} />
+      </button>
     </div>
   );
 }

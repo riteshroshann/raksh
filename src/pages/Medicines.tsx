@@ -7,7 +7,7 @@ import type { MedicineFrequency, Condition } from '../lib/types';
 
 const CONDITIONS: Condition[] = ['Diabetes', 'Thyroid', 'Heart', 'Kidney', 'Hypertension'];
 const SLOT_COLORS: Record<string, string> = {
-  morning: '#F59E0B', afternoon: '#3B82F6', evening: '#8B5CF6', night: '#1F2937',
+  morning: '#F59E0B', afternoon: '#3B82F6', evening: '#8B5CF6', night: '#374151',
 };
 
 export default function Medicines() {
@@ -22,8 +22,8 @@ export default function Medicines() {
   });
   const [saving, setSaving] = useState(false);
 
-  const taken   = todayDoses.filter(d => d.status === 'taken').length;
-  const total   = todayDoses.length;
+  const taken = todayDoses.filter(d => d.status === 'taken').length;
+  const total = todayDoses.length;
 
   const handleAdd = async () => {
     if (!form.name || !form.dosage || !userId) return;
@@ -58,57 +58,60 @@ export default function Medicines() {
   };
 
   return (
-    <div className="p-5 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-5 lg:p-8 max-w-4xl mx-auto pb-24 lg:pb-12">
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900">Medicines</h1>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <h1 style={{ fontSize: 22, fontWeight: 500, color: '#111827' }}>Medicines</h1>
+          <p style={{ fontSize: 14, color: '#6B7280', marginTop: 2 }}>
             {total > 0 ? `${taken} of ${total} doses taken today` : 'Manage your medications'}
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#C0203E] hover:bg-[#A01830] transition-colors shadow-sm shadow-[#C0203E]/30"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
+          style={{ background: '#C0203E', boxShadow: '0 2px 8px rgba(192,32,62,0.25)' }}
         >
-          <Plus size={16} /> Add Medicine
+          <Plus size={16} /> Add medicine
         </button>
       </div>
 
       {total > 0 && (
-        <div className="bg-white rounded-2xl border border-black/[0.05] p-4 mb-6 flex items-center gap-3">
-          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="bg-white rounded-2xl border p-4 mb-6 flex items-center gap-3" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#C0203E] rounded-full transition-all duration-500"
-              style={{ width: `${total > 0 ? (taken / total) * 100 : 0}%` }}
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${total > 0 ? (taken / total) * 100 : 0}%`, background: '#0D9488' }}
             />
           </div>
-          <span className="text-sm font-semibold text-gray-700 flex-shrink-0">{taken}/{total}</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#374151', flexShrink: 0 }}>{taken}/{total} taken</span>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-3xl border border-black/[0.05] overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-50">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Today's Schedule</p>
+          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+            <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(0,0,0,0.05)' }}>
+              <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>Today's schedule</p>
             </div>
 
             {loading ? (
-              <div className="p-6 space-y-3">
-                {[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-gray-50 rounded-2xl animate-pulse" />)}
+              <div className="p-5 space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="skeleton" style={{ height: 60, borderRadius: 12 }} />
+                ))}
               </div>
             ) : todayDoses.length === 0 ? (
-              <div className="flex flex-col items-center py-14 px-6 text-center">
-                <Pill size={28} className="text-gray-200 mb-3" />
-                <p className="text-sm text-gray-500">No medicines added yet</p>
-                <p className="text-xs text-gray-400 mt-1">Click "Add Medicine" to get started</p>
+              <div className="flex flex-col items-center py-12 px-6 text-center">
+                <Pill size={28} style={{ color: '#E5E7EB', marginBottom: 12 }} />
+                <p style={{ fontSize: 14, fontWeight: 500, color: '#6B7280' }}>No medicines added yet</p>
+                <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>Click "Add medicine" to get started</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
                 {todayDoses.map((dose, i) => (
-                  <div key={i} className="flex items-center gap-3 px-6 py-4">
+                  <div key={i} className="flex items-center gap-3 px-5 py-4">
                     <div
                       className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{ background: (SLOT_COLORS[dose.slot] ?? '#6B7280') + '18' }}
@@ -116,14 +119,14 @@ export default function Medicines() {
                       <Clock size={13} style={{ color: SLOT_COLORS[dose.slot] ?? '#6B7280' }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{dose.medicine.name}</p>
-                      <p className="text-xs text-gray-400">{dose.medicine.dosage} · {dose.slot}</p>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: '#111827' }} className="truncate">{dose.medicine.name}</p>
+                      <p style={{ fontSize: 12, color: '#9CA3AF', textTransform: 'capitalize' }}>{dose.medicine.dosage} · {dose.slot}</p>
                     </div>
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => markDose(dose.medicine.id, dose.slot, true)}
                         className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                          dose.status === 'taken' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400 hover:bg-green-100 hover:text-green-500'
+                          dose.status === 'taken' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400 hover:bg-green-100 hover:text-green-600'
                         }`}
                       >
                         <Check size={13} />
@@ -145,27 +148,27 @@ export default function Medicines() {
         </div>
 
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-3xl border border-black/[0.05] overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-50">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">All Medicines</p>
+          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+            <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(0,0,0,0.05)' }}>
+              <p style={{ fontSize: 12, fontWeight: 500, color: '#6B7280' }}>All medicines</p>
             </div>
 
             {medicines.length === 0 && !loading ? (
-              <div className="flex flex-col items-center py-14 px-6 text-center">
-                <Pill size={28} className="text-gray-200 mb-3" />
-                <p className="text-sm text-gray-500">No medicines yet</p>
-                <p className="text-xs text-gray-400 mt-1">Add your first medicine to start tracking</p>
+              <div className="flex flex-col items-center py-12 px-6 text-center">
+                <Pill size={28} style={{ color: '#E5E7EB', marginBottom: 12 }} />
+                <p style={{ fontSize: 14, fontWeight: 500, color: '#6B7280' }}>No medicines yet</p>
+                <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>Add your first medicine to start tracking</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
                 {medicines.map(med => (
-                  <div key={med.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors group">
-                    <div className="w-10 h-10 bg-[#C0203E]/8 rounded-2xl flex items-center justify-center flex-shrink-0">
-                      <Pill size={16} className="text-[#C0203E]" />
+                  <div key={med.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/50 transition-colors group">
+                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#F5F3FF' }}>
+                      <Pill size={16} style={{ color: '#7C3AED' }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900">{med.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p style={{ fontSize: 14, fontWeight: 500, color: '#111827' }}>{med.name}</p>
+                      <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>
                         {med.dosage} · {med.frequency}
                         {med.condition_tag && ` · ${med.condition_tag}`}
                         {med.doctor && ` · Dr. ${med.doctor}`}
@@ -174,8 +177,9 @@ export default function Medicines() {
                         {(med.times ?? []).map(slot => (
                           <span
                             key={slot}
-                            className="text-[9px] font-bold px-2 py-0.5 rounded-full capitalize"
                             style={{
+                              fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 4,
+                              textTransform: 'capitalize',
                               background: (SLOT_COLORS[slot] ?? '#6B7280') + '18',
                               color: SLOT_COLORS[slot] ?? '#6B7280',
                             }}
@@ -186,9 +190,9 @@ export default function Medicines() {
                       </div>
                     </div>
                     {med.quantity_remaining != null && med.quantity_remaining <= 7 && (
-                      <div className="flex items-center gap-1 text-amber-500">
+                      <div className="flex items-center gap-1" style={{ color: '#D97706' }}>
                         <AlertTriangle size={13} />
-                        <span className="text-xs font-medium">{med.quantity_remaining} left</span>
+                        <span style={{ fontSize: 12, fontWeight: 500 }}>{med.quantity_remaining} left</span>
                       </div>
                     )}
                     <button
@@ -218,10 +222,10 @@ export default function Medicines() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+              className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
             >
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-semibold text-gray-900">Add Medicine</h2>
+                <h2 style={{ fontSize: 16, fontWeight: 500, color: '#111827' }}>Add medicine</h2>
                 <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
                   <X size={15} />
                 </button>
@@ -229,31 +233,34 @@ export default function Medicines() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Medicine name *</label>
+                  <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 6 }}>Medicine name *</label>
                   <input
                     value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="e.g. Metformin"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#C0203E]/30"
+                    className="w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none"
+                    style={{ background: '#F9FAFB', borderColor: '#E5E7EB' }}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Dosage *</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 6 }}>Dosage *</label>
                     <input
                       value={form.dosage}
                       onChange={e => setForm(f => ({ ...f, dosage: e.target.value }))}
                       placeholder="e.g. 500mg"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#C0203E]/30"
+                      className="w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none"
+                      style={{ background: '#F9FAFB', borderColor: '#E5E7EB' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Frequency</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 6 }}>Frequency</label>
                     <select
                       value={form.frequency}
                       onChange={e => setForm(f => ({ ...f, frequency: e.target.value as MedicineFrequency }))}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#C0203E]/30"
+                      className="w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none"
+                      style={{ background: '#F9FAFB', borderColor: '#E5E7EB' }}
                     >
                       <option value="once">Once daily</option>
                       <option value="twice">Twice daily</option>
@@ -265,17 +272,18 @@ export default function Medicines() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-2">Time slots</label>
+                  <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 8 }}>Time slots</label>
                   <div className="flex gap-2 flex-wrap">
                     {['morning', 'afternoon', 'evening', 'night'].map(slot => (
                       <button
                         key={slot}
                         onClick={() => toggleSlot(slot)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all capitalize"
+                        className="px-3 py-1.5 rounded-xl transition-all capitalize"
                         style={{
+                          fontSize: 12, fontWeight: 500,
                           background: form.times.includes(slot) ? (SLOT_COLORS[slot] + '22') : '#F9FAFB',
                           color: form.times.includes(slot) ? SLOT_COLORS[slot] : '#9CA3AF',
-                          border: `1.5px solid ${form.times.includes(slot) ? SLOT_COLORS[slot] + '40' : '#E5E7EB'}`,
+                          border: `1.5px solid ${form.times.includes(slot) ? SLOT_COLORS[slot] + '50' : '#E5E7EB'}`,
                         }}
                       >
                         {slot}
@@ -286,23 +294,25 @@ export default function Medicines() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Condition</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 6 }}>Condition</label>
                     <select
                       value={form.condition_tag}
                       onChange={e => setForm(f => ({ ...f, condition_tag: e.target.value as Condition | '' }))}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#C0203E]/30"
+                      className="w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none"
+                      style={{ background: '#F9FAFB', borderColor: '#E5E7EB' }}
                     >
                       <option value="">Select condition</option>
                       {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Doctor</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 6 }}>Doctor</label>
                     <input
                       value={form.doctor}
                       onChange={e => setForm(f => ({ ...f, doctor: e.target.value }))}
                       placeholder="Dr. Name"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#C0203E]/30"
+                      className="w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none"
+                      style={{ background: '#F9FAFB', borderColor: '#E5E7EB' }}
                     />
                   </div>
                 </div>
@@ -310,9 +320,10 @@ export default function Medicines() {
                 <button
                   onClick={handleAdd}
                   disabled={!form.name || !form.dosage || saving}
-                  className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-[#C0203E] hover:bg-[#A01830] transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                  style={{ background: '#C0203E' }}
                 >
-                  {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Plus size={15} /> Add Medicine</>}
+                  {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Plus size={15} /> Add medicine</>}
                 </button>
               </div>
             </motion.div>
