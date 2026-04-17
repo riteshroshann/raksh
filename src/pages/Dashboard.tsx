@@ -137,46 +137,15 @@ export default function Dashboard() {
   return (
     <div style={{ minHeight: '100%' }}>
 
-      {/* ── WARM HERO GRADIENT HEADER ── */}
-      <div
-        style={{
-          background: 'linear-gradient(170deg, #FFF0F3 0%, #FFF5F7 28%, #F7F8FA 58%)',
-          paddingTop: 28, paddingBottom: 32,
-          paddingLeft: 20, paddingRight: 20,
-        }}
-        className="lg:px-8"
-      >
+      {/* ── MINIMALISTIC HEADER ── */}
+      <div className="lg:px-8" style={{ paddingTop: 32, paddingBottom: 24, paddingLeft: 20, paddingRight: 20 }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
-
-          {/* Small label */}
-          <motion.p
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-            style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', color: 'rgba(192,32,62,0.6)', textTransform: 'uppercase', marginBottom: 6 }}
-          >
-            Daily report
-          </motion.p>
-
-          {/* Warm greeting */}
-          <motion.h1
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
-            style={{ fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 700, color: '#111827', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: 6 }}
-          >
-            {greeting}, {firstName}!{' '}
-            <motion.span
-              animate={{ rotate: [0, -10, 10, -10, 0] }}
-              transition={{ delay: 0.8, duration: 0.6, repeat: Infinity, repeatDelay: 4 }}
-              style={{ display: 'inline-block' }}
-            >
-              ✨
-            </motion.span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
-            style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 0 }}
-          >
+          <h1 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 700, color: '#111827', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: 4 }}>
+            {greeting}, {firstName}.
+          </h1>
+          <p style={{ fontSize: 14, color: '#6B7280', marginBottom: 0 }}>
             {dateStr}
-          </motion.p>
+          </p>
         </div>
       </div>
 
