@@ -69,23 +69,48 @@ function CustomTimeInput({ value, onChange, isDarkMode }: { value: string, onCha
     triggerChange(h, m, e.target.value);
   }
 
-  const inputBg  = isDarkMode ? 'rgba(255,255,255,0.04)' : '#f9fafb';
-  const inputBd  = isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+  const inputBg  = isDarkMode ? 'rgba(255,255,255,0.06)' : '#f3f4f6';
+  const inputBd  = isDarkMode ? 'rgba(255,255,255,0.12)' : '#e5e7eb';
   const textPri  = isDarkMode ? '#f3f4f6' : '#111827';
   const optBg    = isDarkMode ? '#1e1e24' : '#ffffff';
+  
+  // Separate states to track focus
+  const [focusH, setFocusH] = useState(false);
+  const [focusM, setFocusM] = useState(false);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', background: inputBg, border: `1.5px solid ${inputBd}`, borderRadius: 10, padding: '4px 12px', width: 'fit-content' }}>
-      <input type="text" inputMode="numeric" maxLength={2} value={h} onChange={(e) => setH(e.target.value.replace(/\D/g, ''))} onBlur={handleHBlur} style={{ width: 20, background: 'transparent', color: textPri, border: 'none', textAlign: 'right', outline: 'none', fontSize: 14, fontWeight: 600, padding: 0, fontFamily: 'inherit' }} />
-      <span style={{ color: textPri, fontWeight: 600, margin: '0 4px', opacity: 0.5 }}>:</span>
-      <input type="text" inputMode="numeric" maxLength={2} value={m} onChange={(e) => setM(e.target.value.replace(/\D/g, ''))} onBlur={handleMBlur} style={{ width: 22, background: 'transparent', color: textPri, border: 'none', textAlign: 'left', outline: 'none', fontSize: 14, fontWeight: 600, padding: 0, fontFamily: 'inherit' }} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {/* Time wrapper */}
+      <div style={{ display: 'flex', alignItems: 'center', background: inputBg, border: `1px solid ${inputBd}`, borderRadius: 10, padding: '4px 6px', width: 'fit-content', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+        <input 
+          type="text" inputMode="numeric" maxLength={2} 
+          value={h} 
+          onChange={(e) => setH(e.target.value.replace(/\D/g, ''))} 
+          onBlur={(e) => { handleHBlur(); setFocusH(false); }}
+          onFocus={() => setFocusH(true)}
+          style={{ width: 26, background: focusH ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'white') : 'transparent', color: textPri, border: 'none', textAlign: 'center', outline: 'none', fontSize: 15, fontWeight: 700, padding: '4px 0', borderRadius: 6, transition: 'background 0.2s', fontFamily: 'inherit' }} 
+        />
+        <span style={{ color: textPri, fontWeight: 700, margin: '0 2px', opacity: 0.4 }}>:</span>
+        <input 
+          type="text" inputMode="numeric" maxLength={2} 
+          value={m} 
+          onChange={(e) => setM(e.target.value.replace(/\D/g, ''))} 
+          onBlur={(e) => { handleMBlur(); setFocusM(false); }}
+          onFocus={() => setFocusM(true)}
+          style={{ width: 26, background: focusM ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'white') : 'transparent', color: textPri, border: 'none', textAlign: 'center', outline: 'none', fontSize: 15, fontWeight: 700, padding: '4px 0', borderRadius: 6, transition: 'background 0.2s', fontFamily: 'inherit' }} 
+        />
+      </div>
       
-      <div style={{ width: 1, height: 16, background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', margin: '0 8px' }} />
-
-      <select value={a} onChange={handleAChange} style={{ background: 'transparent', color: textPri, border: 'none', outline: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', appearance: 'none', padding: 0, fontFamily: 'inherit' }}>
-        <option value="AM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>AM</option>
-        <option value="PM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>PM</option>
-      </select>
+      {/* AM/PM Dropdown wrapper */}
+      <div style={{ position: 'relative', background: inputBg, border: `1px solid ${inputBd}`, borderRadius: 10, display: 'flex', alignItems: 'center', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+        <select value={a} onChange={handleAChange} style={{ background: 'transparent', color: textPri, border: 'none', outline: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', appearance: 'none', padding: '8px 24px 8px 12px', fontFamily: 'inherit' }}>
+          <option value="AM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>AM</option>
+          <option value="PM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>PM</option>
+        </select>
+        <div style={{ position: 'absolute', right: 8, pointerEvents: 'none', opacity: 0.5 }}>
+          <ChevronDown size={14} strokeWidth={3} style={{ color: textPri }} />
+        </div>
+      </div>
     </div>
   );
 }
