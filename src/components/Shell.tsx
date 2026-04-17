@@ -189,9 +189,16 @@ export function Shell() {
                   initial={{ opacity: 0, scale: 0.95, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }} transition={{ duration: 0.15 }}
                   style={{ position: 'absolute', top: 46, right: 0, zIndex: 200, width: 280, background: isDarkMode ? 'rgba(20,20,28,0.97)' : 'rgba(255,255,255,0.98)', border: `1px solid ${sidebarBd}`, borderRadius: 16, boxShadow: '0 12px 48px rgba(0,0,0,0.2)', overflow: 'hidden', backdropFilter: 'blur(20px)' }}>
-                  <div style={{ padding: '14px 16px', borderBottom: `1px solid ${sidebarBd}` }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: textPri }}>Notifications</p>
-                    <p style={{ fontSize: 11, color: textSec, marginTop: 2 }}>Reminders {notifGranted ? '✅ active' : '❌ off'}</p>
+                  <div style={{ padding: '16px', borderBottom: `1px solid ${sidebarBd}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: textPri }}>Notifications</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: notifGranted ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', padding: '4px 8px', borderRadius: 999 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: notifGranted ? '#10B981' : '#EF4444' }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: notifGranted ? (isDarkMode ? '#34D399' : '#059669') : (isDarkMode ? '#F87171' : '#DC2626'), textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {notifGranted ? 'Active' : 'Disabled'}
+                      </span>
+                    </div>
                   </div>
                   <div style={{ padding: '12px 16px' }}>
                     <p style={{ fontSize: 12, color: textSec, lineHeight: 1.6 }}>
