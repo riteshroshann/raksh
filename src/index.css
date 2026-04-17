@@ -164,3 +164,37 @@
     box-shadow: 0 12px 40px rgba(0,0,0,0.08);
   }
 }
+
+/* ── Cinematic Landing/Login Animations ── */
+@keyframes scroll-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes aurora-breathe {
+  0%   { opacity: 0.6; transform: translate(-50%, -50%) scale(1);   }
+  100% { opacity: 1;   transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@keyframes raksh-heartbeat {
+  0%, 100% { transform: scale(1); }
+  15%, 45% { transform: scale(1.35); }
+  30%      { transform: scale(1); }
+}
+
+/* ── Chart Color Tokens (maroon spectrum) ── */
+:root {
+  --chart-1: #C0203E;
+  --chart-2: #E8657A;
+  --chart-3: #8A101E;
+  --chart-4: #F5B0BB;
+  --chart-5: #5A0812;
+  --chart-normal:   #15803D;
+  --chart-elevated: #D97706;
+  --chart-low:      #92400E;
+  --chart-muted:    rgba(255,255,255,0.04);
+}
+
+/* ── Dark input placeholder color ── */
+input::placeholder { color: rgba(255,255,255,0.22); }
+
