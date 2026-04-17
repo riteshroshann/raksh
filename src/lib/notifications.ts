@@ -1,8 +1,5 @@
 // Raksh — Medicine Notification Service
-// Goals:
-//  1. Request browser push permission (tab-open → works in background via SW)
-//  2. Schedule per-slot reminders with custom times
-//  3. Use serviceWorker.showNotification() so it fires even when tab is backgrounded
+// iOS Safari has NO Notification API at all — every access must be guarded.
 
 export interface ScheduledDose {
   medicineName: string;
@@ -11,27 +8,47 @@ export interface ScheduledDose {
   time: string; // "HH:MM" 24h
 }
 
-// ── Active timers map (key = `name-slot`)
+// ── Safe check — works on iOS/Android/Safari/Chrome
+function notifApi(): typeof Notification | null {
+  try {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      return window.Notification as typeof Notification;
+    }
+  } catch { /* some iOS WebViews throw even on 'in' checks */ }
+  return null;
+}
+
+// ── Active timers map
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-// ── Request permission + register SW
+// ── Request permission
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (typeof window === 'undefined' || !('Notification' in window)) return false;
-  if (Notification.permission === 'granted') return true;
-  if (Notification.permission === 'denied') return false;
-  const result = await Notification.requestPermission();
-  return result === 'granted';
+  const N = notifApi();
+  if (!N) return false; // iOS Safari — silently skip
+  try {
+    if (N.permission === 'granted') return true;
+    if (N.permission === 'denied')  return false;
+    const result = await N.requestPermission();
+    return result === 'granted';
+  } catch {
+    return false;
+  }
 }
 
 export function notificationsSupported(): boolean {
-  return typeof window !== 'undefined' && 'Notification' in window;
+  return notifApi() !== null;
 }
 
 export function notificationsGranted(): boolean {
-  return typeof window !== 'undefined' && Notification.permission === 'granted';
+  try {
+    const N = notifApi();
+    return N?.permission === 'granted';
+  } catch {
+    return false;
+  }
 }
 
-// ── Show via SW (shows even in background tab)
+// ── Show notification via Service Worker (works backgrounded)
 async function fireNotification(title: string, body: string, tag: string) {
   if (!notificationsGranted()) return;
   try {
@@ -47,9 +64,13 @@ async function fireNotification(title: string, body: string, tag: string) {
       });
       return;
     }
-  } catch { /* fall through */ }
-  // Fallback
-  new Notification(title, { body, tag });
+  } catch { /* fallthrough to inline */ }
+
+  // Fallback only if supported
+  try {
+    const N = notifApi();
+    if (N) new N(title, { body, tag });
+  } catch { /* silently skip on iOS */ }
 }
 
 // ── Schedule one dose — reschedules itself daily
@@ -57,7 +78,9 @@ function scheduleOne(dose: ScheduledDose) {
   const key = `${dose.medicineName}-${dose.slot}`;
   if (timers.has(key)) clearTimeout(timers.get(key)!);
 
-  const [h, m] = dose.time.split(':').map(Number);
+  const parts = (dose.time ?? '08:00').split(':').map(Number);
+  const h = parts[0] ?? 8;
+  const m = parts[1] ?? 0;
   const now    = new Date();
   const target = new Date();
   target.setHours(h, m, 0, 0);
@@ -72,13 +95,13 @@ function scheduleOne(dose: ScheduledDose) {
       `Time to take ${dose.medicineName} (${dose.dosage}) — ${dose.slot}`,
       key
     );
-    scheduleOne(dose); // reschedule for tomorrow
+    scheduleOne(dose);
   }, delay);
 
   timers.set(key, id);
 }
 
-// ── Schedule all doses from localStorage
+// ── Schedule all reminders from localStorage
 export function scheduleAllReminders() {
   if (!notificationsGranted()) return;
   const stored = loadReminderStore();
@@ -93,7 +116,7 @@ export function cancelAllReminders() {
   timers.clear();
 }
 
-// ── Persist reminder schedule per medicine
+// ── Persist reminder schedule
 interface ReminderStore {
   [medicineName: string]: ScheduledDose[];
 }
@@ -105,19 +128,18 @@ function loadReminderStore(): ReminderStore {
 export function saveRemindersForMedicine(medicineName: string, doses: ScheduledDose[]) {
   const store = loadReminderStore();
   store[medicineName] = doses;
-  localStorage.setItem('raksh-reminders', JSON.stringify(store));
+  try { localStorage.setItem('raksh-reminders', JSON.stringify(store)); } catch {}
 }
 
 export function deleteRemindersForMedicine(medicineName: string) {
   const store = loadReminderStore();
-  // Cancel active timers
   Object.keys(store[medicineName] ?? {}).forEach(slot => {
     const key = `${medicineName}-${slot}`;
     const t = timers.get(key);
     if (t) { clearTimeout(t); timers.delete(key); }
   });
   delete store[medicineName];
-  localStorage.setItem('raksh-reminders', JSON.stringify(store));
+  try { localStorage.setItem('raksh-reminders', JSON.stringify(store)); } catch {}
 }
 
 // Default times per slot

@@ -4,7 +4,7 @@ import { Home, HeartPulse, Pill, LogOut, Bell, Moon, Sun, User } from 'lucide-re
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import { GlassFilter } from './GlassEffect';
-import { requestNotificationPermission, notificationsGranted, scheduleAllReminders } from '../lib/notifications';
+import { requestNotificationPermission, notificationsGranted, notificationsSupported, scheduleAllReminders } from '../lib/notifications';
 
 const NAV = [
   { to: '/home',      icon: Home,       label: 'Home' },
@@ -32,7 +32,8 @@ export function Shell() {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
-    if (notificationsGranted()) scheduleAllReminders();
+    // Only schedule on browsers that actually support notifications
+    if (notificationsSupported() && notificationsGranted()) scheduleAllReminders();
   }, []);
 
   async function handleBellClick() {
