@@ -4,11 +4,24 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import { useMedicines } from '../hooks/useMedicines';
 import type { MedicineFrequency, Condition } from '../lib/types';
+import {
+  saveRemindersForMedicine,
+  scheduleAllReminders,
+  notificationsGranted,
+  SLOT_DEFAULT_TIMES,
+} from '../lib/notifications';
 
 const CONDITIONS: Condition[] = ['Diabetes', 'Thyroid', 'Heart', 'Kidney', 'Hypertension'];
 const SLOT_COLORS: Record<string, string> = {
-  morning: '#F59E0B', afternoon: '#3B82F6', evening: '#8B5CF6', night: '#374151',
+  morning: '#C0203E', afternoon: '#C0203E', evening: '#C0203E', night: '#C0203E',
 };
+// Slot labels & emoji
+const SLOTS = [
+  { key: 'morning',   label: 'Morning',   emoji: '🌅' },
+  { key: 'afternoon', label: 'Afternoon', emoji: '☀️' },
+  { key: 'evening',   label: 'Evening',   emoji: '🌇' },
+  { key: 'night',     label: 'Night',     emoji: '🌙' },
+];
 
 export default function Medicines() {
   const { user } = useAppContext();
@@ -20,6 +33,7 @@ export default function Medicines() {
     name: '', dosage: '', frequency: 'once' as MedicineFrequency,
     times: ['morning'], condition_tag: '' as Condition | '', doctor: '', notes: '',
   });
+  const [slotTimes, setSlotTimes] = useState<Record<string, string>>(SLOT_DEFAULT_TIMES);
   const [saving, setSaving] = useState(false);
 
   const taken = todayDoses.filter(d => d.status === 'taken').length;
@@ -45,9 +59,25 @@ export default function Medicines() {
       notes: form.notes || null,
       is_active: true,
     });
+
+    // Save reminder schedule if notifications are enabled
+    if (notificationsGranted()) {
+      saveRemindersForMedicine(
+        form.name,
+        form.times.map(slot => ({
+          medicineName: form.name,
+          dosage: form.dosage,
+          slot,
+          time: slotTimes[slot] ?? SLOT_DEFAULT_TIMES[slot],
+        }))
+      );
+      scheduleAllReminders();
+    }
+
     setSaving(false);
     setShowForm(false);
     setForm({ name: '', dosage: '', frequency: 'once', times: ['morning'], condition_tag: '', doctor: '', notes: '' });
+    setSlotTimes(SLOT_DEFAULT_TIMES);
   };
 
   const toggleSlot = (slot: string) => {
@@ -272,23 +302,47 @@ export default function Medicines() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 8 }}>Time slots</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {['morning', 'afternoon', 'evening', 'night'].map(slot => (
-                      <button
-                        key={slot}
-                        onClick={() => toggleSlot(slot)}
-                        className="px-3 py-1.5 rounded-xl transition-all capitalize"
-                        style={{
-                          fontSize: 12, fontWeight: 500,
-                          background: form.times.includes(slot) ? (SLOT_COLORS[slot] + '22') : '#F9FAFB',
-                          color: form.times.includes(slot) ? SLOT_COLORS[slot] : '#9CA3AF',
-                          border: `1.5px solid ${form.times.includes(slot) ? SLOT_COLORS[slot] + '50' : '#E5E7EB'}`,
-                        }}
-                      >
-                        {slot}
-                      </button>
-                    ))}
+                  <label style={{ fontSize: 12, fontWeight: 500, color: '#6B7280', display: 'block', marginBottom: 10 }}>Time slots & reminders</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {SLOTS.map(({ key, label, emoji }) => {
+                      const active = form.times.includes(key);
+                      return (
+                        <div key={key}>
+                          <button
+                            type="button"
+                            onClick={() => toggleSlot(key)}
+                            style={{
+                              width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                              padding: '10px 14px', borderRadius: 10, textAlign: 'left',
+                              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                              background: active ? 'rgba(192,32,62,0.08)' : '#F9FAFB',
+                              border: `1.5px solid ${active ? '#C0203E' : '#E5E7EB'}`,
+                              color: active ? '#C0203E' : '#9CA3AF',
+                              transition: 'all 150ms',
+                            }}
+                          >
+                            <span>{emoji}</span>
+                            <span style={{ flex: 1 }}>{label}</span>
+                            {active && (
+                              <span style={{ fontSize: 11, fontWeight: 400, color: '#C0203E', opacity: 0.7 }}>✓</span>
+                            )}
+                          </button>
+                          {/* Custom time input — shown when slot is selected */}
+                          {active && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, padding: '8px 14px', borderRadius: 8, background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+                              <Clock size={13} style={{ color: '#9CA3AF', flexShrink: 0 }} />
+                              <span style={{ fontSize: 12, color: '#6B7280', flex: 1 }}>Reminder time</span>
+                              <input
+                                type="time"
+                                value={slotTimes[key] ?? SLOT_DEFAULT_TIMES[key]}
+                                onChange={e => setSlotTimes(prev => ({ ...prev, [key]: e.target.value }))}
+                                style={{ border: 'none', background: 'transparent', fontSize: 13, fontWeight: 500, color: '#111827', outline: 'none', cursor: 'pointer' }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

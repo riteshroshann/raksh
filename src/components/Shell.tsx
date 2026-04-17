@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, HeartPulse, Pill, LogOut } from 'lucide-react';
+import { Home, HeartPulse, Pill, LogOut, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
+import { requestNotificationPermission, notificationsGranted, scheduleAllReminders } from '../lib/notifications';
 
 // Profile is intentionally excluded from the bottom nav — accessible via the top-right avatar
 const NAV = [
@@ -15,6 +16,26 @@ export function Shell() {
   const { user, signOut } = useAppContext();
   const location = useLocation();
   const navigate  = useNavigate();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(notificationsGranted());
+
+  // Register SW + reschedule reminders on mount
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    if (notificationsGranted()) scheduleAllReminders();
+  }, []);
+
+  async function handleBellClick() {
+    if (!notifGranted) {
+      const granted = await requestNotificationPermission();
+      setNotifGranted(granted);
+      if (granted) { scheduleAllReminders(); setNotifOpen(true); }
+    } else {
+      setNotifOpen(v => !v);
+    }
+  }
 
   const profile  = user?.profile;
   const initials = profile?.full_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? 'R';
@@ -98,12 +119,66 @@ export function Shell() {
           </div>
           <h1 className="hidden lg:block text-gray-900" style={{ fontSize: 16, fontWeight: 500 }}>{currentLabel}</h1>
 
-          {/* Clickable avatar — navigates to /profile */}
-          <button
-            onClick={() => navigate('/profile')}
-            className="ml-auto flex items-center gap-2 transition-opacity hover:opacity-80"
-            title="Profile & Settings"
-          >
+          {/* ── Bell notification button ── */}
+          <div style={{ position: 'relative', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              onClick={handleBellClick}
+              title={notifGranted ? 'Notifications' : 'Enable notifications'}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', color: '#6B7280', transition: 'all 0.18s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,32,62,0.08)'; e.currentTarget.style.color = '#C0203E'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = '#6B7280'; }}
+            >
+              <Bell size={16} />
+              {!notifGranted && (
+                <span style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#C0203E', border: '1.5px solid white' }} />
+              )}
+            </button>
+
+            {/* Notification panel */}
+            <AnimatePresence>
+              {notifOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                  style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 280, background: 'white', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', overflow: 'hidden' }}
+                >
+                  <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>Notifications</p>
+                    <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>Medicine reminders are {notifGranted ? '✅ active' : '❌ disabled'}</p>
+                  </div>
+                  <div style={{ padding: '12px 16px' }}>
+                    <p style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.6 }}>
+                      {notifGranted
+                        ? "You'll get reminders based on the times set in each medicine."
+                        : 'Grant permission to receive medicine reminders.'}
+                    </p>
+                    {!notifGranted && (
+                      <button
+                        onClick={async () => { const ok = await requestNotificationPermission(); setNotifGranted(ok); if (ok) scheduleAllReminders(); }}
+                        style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 8, background: '#C0203E', color: 'white', fontWeight: 600, fontSize: 13, border: 'none', cursor: 'pointer' }}
+                      >
+                        Enable reminders
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { navigate('/medicines'); setNotifOpen(false); }}
+                      style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 8, background: 'rgba(0,0,0,0.04)', color: '#374151', fontWeight: 500, fontSize: 13, border: 'none', cursor: 'pointer' }}
+                    >
+                      View medicines
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Clickable avatar — navigates to /profile */}
+            <button
+              onClick={() => { navigate('/profile'); setNotifOpen(false); }}
+              className="flex items-center gap-2 transition-opacity hover:opacity-80"
+              title="Profile & Settings"
+            >
             <span className="hidden lg:block" style={{ fontSize: 14, color: '#6B7280' }}>{profile?.full_name}</span>
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-transparent hover:ring-[#C0203E]/30 transition-all"
@@ -112,7 +187,9 @@ export function Shell() {
               <span className="text-white font-semibold" style={{ fontSize: 12 }}>{initials}</span>
             </div>
           </button>
+          </div>{/* end bell+avatar wrapper */}
         </header>
+
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">
