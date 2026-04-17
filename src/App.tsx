@@ -67,7 +67,11 @@ function RequireAuth() {
 
 function RedirectIfAuth() {
   const { user, authLoading } = useAppContext();
-  if (authLoading) return null;
+  if (authLoading) return (
+    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #C0203E', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
   if (user?.profile) return <Navigate to="/home" replace />;
   return <Outlet />;
 }

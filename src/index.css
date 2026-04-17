@@ -195,6 +195,12 @@
   --chart-muted:    rgba(255,255,255,0.04);
 }
 
-/* ── Dark input placeholder color ── */
-input::placeholder { color: rgba(255,255,255,0.22); }
+/* ── Spinner ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
+/* ── Placeholder: scoped to dark mode only ── */
+.dark input::placeholder { color: rgba(255,255,255,0.3); }
+input::placeholder { color: #9CA3AF; }

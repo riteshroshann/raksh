@@ -35,12 +35,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('raksh-dark-mode') === 'true';
+    try {
+      return localStorage.getItem('raksh-dark-mode') === 'true';
+    } catch {
+      return false;
+    }
   });
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
-    localStorage.setItem('raksh-dark-mode', String(isDarkMode));
+    try {
+      localStorage.setItem('raksh-dark-mode', String(isDarkMode));
+    } catch { /* storage blocked in some browsers */ }
   }, [isDarkMode]);
 
   const toggleDarkMode = useCallback(() => {
