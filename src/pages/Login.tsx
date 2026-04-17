@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Github, Moon, Sun } from 'lucide-react';
+import { Mail, Github, Moon, Sun, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -112,6 +112,15 @@ export default function Login() {
         title={dark ? 'Light mode' : 'Dark mode'}
       >
         {dark ? <Sun size={16} /> : <Moon size={16} />}
+      </button>
+
+      {/* Back button */}
+      <button
+        onClick={() => navigate('/')}
+        style={{ position: 'fixed', top: 16, left: 16, width: 36, height: 36, borderRadius: '50%', background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: dark ? '#F1F1F1' : '#6B7280', zIndex: 10, transition: 'all 0.2s' }}
+        title="Back to home"
+      >
+        <ArrowLeft size={16} />
       </button>
 
       <div className="w-full grid gap-3 md:grid-cols-2" style={{ maxWidth: 780 }}>
