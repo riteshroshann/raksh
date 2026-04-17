@@ -4,7 +4,7 @@ import { Mail, Github, Moon, Sun } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 
-type Step = 'options' | 'otp';
+type Step = 'options' | 'otp' | 'forgot' | 'forgot-sent';
 
 const BRAND_TAGS = ['TRACK', 'LOG', 'PROTECT'];
 
@@ -74,6 +74,18 @@ export default function Login() {
       const { data: profile } = await supabase.from('profiles').select('id').eq('id', data.session.user.id).single();
       navigate(profile ? '/home' : '/onboarding', { replace: true });
     }
+    setLoading(false);
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setLoading(true); setError(null);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (err) { setError(err.message); }
+    else { setStep('forgot-sent'); }
     setLoading(false);
   }
 
@@ -206,7 +218,7 @@ export default function Login() {
                         id="login-email" type="email" autoComplete="email"
                         value={email} onChange={e => setEmail(e.target.value)}
                         placeholder="you@example.com" required
-                        style={{ width: '100%', padding: '12px 14px 12px 36px', background: inputBg, border: `1px solid ${inputBd}`, borderRadius: 10, color: textPri, fontSize: 14, outline: 'none', transition: 'border-color 150ms' }}
+                        style={{ width: '100%', padding: '12px 14px 12px 36px', background: inputBg, border: `1px solid ${inputBd}`, borderRadius: 10, color: textPri, fontSize: 14, outline: 'none', transition: 'border-color 150ms', boxSizing: 'border-box' }}
                         onFocus={e => { e.currentTarget.style.borderColor = '#C0203E'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(192,32,62,0.12)'; }}
                         onBlur={e => { e.currentTarget.style.borderColor = inputBd; e.currentTarget.style.boxShadow = 'none'; }}
                       />
@@ -214,14 +226,22 @@ export default function Login() {
                   </div>
                   <button
                     type="submit" id="send-magic-link" disabled={loading || !email.trim()}
-                    style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#C0203E', color: 'white', fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', border: 'none', cursor: 'pointer', opacity: loading || !email.trim() ? 0.5 : 1, boxShadow: '0 4px 16px rgba(192,32,62,0.3)' }}
+                    style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#C0203E', color: 'white', fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', border: 'none', cursor: 'pointer', opacity: loading || !email.trim() ? 0.5 : 1, boxShadow: '0 4px 16px rgba(192,32,62,0.3)', fontFamily: 'inherit' }}
                   >
                     {loading ? 'SENDING…' : 'SIGN IN'}
+                  </button>
+                  {/* Forgot password */}
+                  <button
+                    type="button"
+                    onClick={() => { setError(null); setStep('forgot'); }}
+                    style={{ background: 'none', border: 'none', color: textSec, fontSize: 12, cursor: 'pointer', textAlign: 'center', marginTop: 2, fontFamily: 'inherit' }}
+                  >
+                    Forgot password?
                   </button>
                 </form>
 
                 <p style={{ fontSize: 12, textAlign: 'center', color: textSec, marginTop: 18 }}>
-                  New here? &nbsp;
+                  New here?&nbsp;
                   <span style={{ color: '#C0203E', fontWeight: 600, cursor: 'pointer' }}>Sign up free</span>
                 </p>
               </motion.div>
@@ -246,15 +266,66 @@ export default function Login() {
                 </div>
 
                 <button onClick={handleOtpVerify} id="verify-otp" disabled={loading || otp.join('').length < 6}
-                  style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#C0203E', color: 'white', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: loading || otp.join('').length < 6 ? 0.45 : 1, boxShadow: '0 4px 16px rgba(192,32,62,0.3)' }}
+                  style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#C0203E', color: 'white', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: loading || otp.join('').length < 6 ? 0.45 : 1, boxShadow: '0 4px 16px rgba(192,32,62,0.3)', fontFamily: 'inherit' }}
                 >
                   {loading ? 'VERIFYING…' : 'VERIFY & SIGN IN'}
                 </button>
 
-                <button onClick={() => { setStep('options'); setOtp(['','','','','','']); setError(null); }}
-                  style={{ marginTop: 16, fontSize: 13, color: textSec, background: 'none', border: 'none', cursor: 'pointer' }}
+                <button onClick={() => { setStep('options'); setOtp(['','','','','']); setError(null); }}
+                  style={{ marginTop: 16, fontSize: 13, color: textSec, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                 >
                   ← Use a different email
+                </button>
+              </motion.div>
+            )}
+
+            {/* ── FORGOT PASSWORD ── */}
+            {step === 'forgot' && (
+              <motion.div key="forgot" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.22 }} style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(192,32,62,0.1)', border: '1px solid rgba(192,32,62,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                  <Mail size={18} style={{ color: '#C0203E' }} />
+                </div>
+                <p style={{ fontSize: 22, fontWeight: 800, color: textPri, marginBottom: 6, letterSpacing: '-0.02em' }}>Reset password</p>
+                <p style={{ fontSize: 13, color: textSec, marginBottom: 28, lineHeight: 1.6 }}>Enter your email and we'll send a reset link straight away.</p>
+
+                <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ position: 'relative' }}>
+                    <Mail size={13} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: textSec, pointerEvents: 'none' }} />
+                    <input
+                      type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}
+                      placeholder="you@example.com" required
+                      style={{ width: '100%', padding: '12px 14px 12px 36px', background: inputBg, border: `1px solid ${inputBd}`, borderRadius: 10, color: textPri, fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#C0203E'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(192,32,62,0.12)'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = inputBd; e.currentTarget.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+                  <button type="submit" disabled={loading || !email.trim()}
+                    style={{ width: '100%', padding: '14px', borderRadius: 10, background: '#C0203E', color: 'white', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', opacity: loading || !email.trim() ? 0.5 : 1, boxShadow: '0 4px 16px rgba(192,32,62,0.3)', fontFamily: 'inherit' }}
+                  >
+                    {loading ? 'SENDING…' : 'SEND RESET LINK'}
+                  </button>
+                </form>
+
+                <button onClick={() => { setStep('options'); setError(null); }}
+                  style={{ marginTop: 16, fontSize: 13, color: textSec, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  ← Back to sign in
+                </button>
+              </motion.div>
+            )}
+
+            {/* ── FORGOT SENT CONFIRMATION ── */}
+            {step === 'forgot-sent' && (
+              <motion.div key="forgot-sent" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', paddingTop: 32 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(21,128,61,0.12)', border: '1px solid rgba(21,128,61,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                  <span style={{ fontSize: 24 }}>✉️</span>
+                </div>
+                <p style={{ fontSize: 18, fontWeight: 800, color: textPri, marginBottom: 8, letterSpacing: '-0.02em' }}>Check your inbox</p>
+                <p style={{ fontSize: 13, color: textSec, lineHeight: 1.7, marginBottom: 32 }}>We sent a reset link to <strong style={{ color: textPri }}>{email}</strong>. It may take a minute to arrive.</p>
+                <button onClick={() => { setStep('options'); setError(null); }}
+                  style={{ fontSize: 13, color: '#C0203E', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  ← Back to sign in
                 </button>
               </motion.div>
             )}
