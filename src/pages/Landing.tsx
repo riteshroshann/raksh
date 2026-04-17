@@ -19,11 +19,19 @@ export default function Landing() {
   const [email, setEmail]         = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [dark, setDark]           = useState(() => localStorage.getItem('raksh-landing-dark') === 'true');
+  const [dark, setDark]           = useState(() => {
+    try {
+      return localStorage.getItem('raksh-landing-dark') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   // Apply theme
   useEffect(() => {
-    localStorage.setItem('raksh-landing-dark', String(dark));
+    try {
+      localStorage.setItem('raksh-landing-dark', String(dark));
+    } catch {}
   }, [dark]);
 
   const bg     = dark ? '#0C0C0C' : '#FFFFFF';
@@ -82,14 +90,8 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Subtle grid */}
-      {dark && <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', backgroundSize: '60px 60px', backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.022) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.022) 1px, transparent 1px)', maskImage: 'radial-gradient(ellipse at 50% 40%, black 20%, transparent 80%)' }} />}
-
-      {/* Aurora (dark only) */}
-      {dark && <div aria-hidden style={{ position: 'fixed', top: '34%', left: '50%', transform: 'translate(-50%,-50%)', width: '55vw', height: '38vw', background: 'radial-gradient(circle, rgba(192,32,62,0.1) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none', zIndex: 0, animation: 'aurora-breathe 9s ease-in-out infinite alternate' }} />}
-
-      {/* Light mode subtle gradient */}
-      {!dark && <div aria-hidden style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '50vh', background: 'linear-gradient(170deg, #FFF0F3 0%, #FFF5F7 25%, #FFFFFF 55%)', pointerEvents: 'none', zIndex: 0 }} />}
+      {/* Minimalistic Gradient (Light only) */}
+      {!dark && <div aria-hidden style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '50vh', background: 'linear-gradient(170deg, #FFF0F3 0%, #FFFFFF 65%)', pointerEvents: 'none', zIndex: 0 }} />}
 
       {/* ── HERO ── */}
       <section style={{ position: 'relative', zIndex: 1, padding: '140px 24px 80px', maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
@@ -164,16 +166,7 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* ── MARQUEE BAND ── */}
-      <div style={{ position: 'relative', zIndex: 1, overflow: 'hidden', borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}`, padding: '14px 0', marginBottom: 80, transform: 'rotate(-1.2deg) scaleX(1.08)', background: dark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.015)' }}>
-        <div style={{ display: 'flex', width: 'max-content', animation: 'scroll-marquee 32s linear infinite' }}>
-          {fullMarquee.map((item, i) => (
-            <span key={i} style={{ padding: '0 18px', fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: item === '✦' ? '#C0203E' : muted, whiteSpace: 'nowrap' }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
+
 
       {/* ── FEATURES ── */}
       <section style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', padding: '0 24px 100px' }}>
@@ -203,9 +196,6 @@ export default function Landing() {
 
       {/* ── CTA SECTION ── */}
       <section style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '80px 24px 110px', borderTop: `1px solid ${border}`, overflow: 'hidden' }}>
-        <div aria-hidden style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', fontSize: '26vw', fontWeight: 900, letterSpacing: '-0.05em', color: 'transparent', WebkitTextStroke: `1px ${dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, userSelect: 'none', pointerEvents: 'none', lineHeight: 0.75, whiteSpace: 'nowrap' }}>
-          raksh
-        </div>
         <motion.h2
           initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           style={{ fontSize: 'clamp(38px, 7vw, 72px)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: 36, lineHeight: 1.05, color: text }}

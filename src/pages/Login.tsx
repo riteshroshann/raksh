@@ -15,12 +15,20 @@ export default function Login() {
   const [otp, setOtp]       = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState<string | null>(null);
-  const [dark, setDark]     = useState(() => localStorage.getItem('raksh-login-dark') === 'true');
+  const [dark, setDark]     = useState(() => {
+    try {
+      return localStorage.getItem('raksh-login-dark') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   function toggleDark() {
     const next = !dark;
     setDark(next);
-    localStorage.setItem('raksh-login-dark', String(next));
+    try {
+      localStorage.setItem('raksh-login-dark', String(next));
+    } catch {}
   }
 
   // Theme tokens

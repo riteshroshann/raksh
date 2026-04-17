@@ -18,7 +18,8 @@ function todayIso(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-function slotForTime(time: string): DoseTimeSlot {
+function slotForTime(time: string | null | undefined): DoseTimeSlot {
+  if (!time) return 'morning';
   const map: Record<string, DoseTimeSlot> = {
     morning: 'morning',
     afternoon: 'afternoon',
