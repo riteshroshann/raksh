@@ -86,22 +86,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const bootstrap = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session?.user && mounted) {
-        const [profile, members] = await Promise.all([
-          fetchProfile(session.user.id),
-          fetchFamilyMembers(session.user.id),
-        ]);
-        setUser({ id: session.user.id, email: session.user.email ?? '', profile });
-        setFamilyMembers(members);
-      }
-
+    // Safety timeout — if Supabase takes >6s, unblock the UI
+    const safetyTimer = setTimeout(() => {
       if (mounted) setAuthLoading(false);
-    };
-
-    bootstrap();
+    }, 6000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
@@ -111,19 +99,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
           fetchProfile(session.user.id),
           fetchFamilyMembers(session.user.id),
         ]);
-        setUser({ id: session.user.id, email: session.user.email ?? '', profile });
-        setFamilyMembers(members);
+        if (mounted) {
+          setUser({ id: session.user.id, email: session.user.email ?? '', profile });
+          setFamilyMembers(members);
+        }
       } else {
-        setUser(null);
-        setFamilyMembers([]);
-        setActiveMemberId(null);
+        if (mounted) {
+          setUser(null);
+          setFamilyMembers([]);
+          setActiveMemberId(null);
+        }
       }
 
-      setAuthLoading(false);
+      if (mounted) {
+        clearTimeout(safetyTimer);
+        setAuthLoading(false);
+      }
     });
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, [fetchProfile, fetchFamilyMembers]);
