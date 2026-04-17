@@ -157,6 +157,7 @@ export default function Landing() {
               <input
                 type="email" name="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com" required
+                className="placeholder-[#9CA3AF] dark:placeholder-[#6B7280]"
                 style={{ flex: '1 1 190px', padding: '12px 16px', borderRadius: 10, background: inputBg, border: `1px solid ${inputBd}`, color: text, fontSize: 14, outline: 'none' }}
                 onFocus={e => { e.currentTarget.style.borderColor = '#C0203E'; }}
                 onBlur={e => { e.currentTarget.style.borderColor = inputBd; }}
