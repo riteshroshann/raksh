@@ -9,13 +9,15 @@ import {
 import { AppProvider, useAppContext } from './context/AppContext';
 import { Shell } from './components/Shell';
 
-import Landing    from './pages/Landing';
-import Login      from './pages/Login';
-import Onboarding from './pages/Onboarding';
-import Dashboard  from './pages/Dashboard';
-import Vitals     from './pages/Vitals';
-import Medicines  from './pages/Medicines';
-import Profile    from './pages/Profile';
+import { lazy, Suspense } from 'react';
+
+const Landing    = lazy(() => import('./pages/Landing'));
+const Login      = lazy(() => import('./pages/Login'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const Dashboard  = lazy(() => import('./pages/Dashboard'));
+const Vitals     = lazy(() => import('./pages/Vitals'));
+const Medicines  = lazy(() => import('./pages/Medicines'));
+const Profile    = lazy(() => import('./pages/Profile'));
 
 class ErrorBoundary extends Component<any, any> {
   state: { error: Error | null } = { error: null };
@@ -72,24 +74,30 @@ function RedirectIfAuth() {
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route element={<RedirectIfAuth />}>
-        <Route path="/"           element={<Landing />} />
-        <Route path="/login"      element={<Login />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-      </Route>
-
-      <Route element={<RequireAuth />}>
-        <Route element={<Shell />}>
-          <Route path="/home"      element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
-          <Route path="/vitals"    element={<ErrorBoundary><Vitals /></ErrorBoundary>} />
-          <Route path="/medicines" element={<ErrorBoundary><Medicines /></ErrorBoundary>} />
-          <Route path="/profile"   element={<ErrorBoundary><Profile /></ErrorBoundary>} />
+    <Suspense fallback={
+      <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA' }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #C0203E', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+    }>
+      <Routes>
+        <Route element={<RedirectIfAuth />}>
+          <Route path="/"           element={<Landing />} />
+          <Route path="/login"      element={<Login />} />
+          <Route path="/onboarding" element={<Onboarding />} />
         </Route>
-      </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route element={<RequireAuth />}>
+          <Route element={<Shell />}>
+            <Route path="/home"      element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+            <Route path="/vitals"    element={<ErrorBoundary><Vitals /></ErrorBoundary>} />
+            <Route path="/medicines" element={<ErrorBoundary><Medicines /></ErrorBoundary>} />
+            <Route path="/profile"   element={<ErrorBoundary><Profile /></ErrorBoundary>} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 
