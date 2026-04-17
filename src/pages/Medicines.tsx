@@ -282,8 +282,8 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 1 }}
         transition={{ type: 'tween', duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-        className="relative w-full max-w-[500px] flex flex-col md:rounded-[20px] rounded-t-[24px] shadow-2xl"
-        style={{ maxHeight: '90vh', background: bgModal, border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : 'none' }}
+        className="relative w-full max-w-[500px] flex flex-col md:rounded-[20px] rounded-t-[24px] shadow-2xl overflow-hidden"
+        style={{ maxHeight: '90dvh', background: bgModal, border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : 'none' }}
       >
         <div className="w-full flex justify-center md:hidden pt-3 pb-1">
            <div className="w-8 h-1 rounded-full" style={{ background: isDarkMode ? 'rgba(255,255,255,0.2)' : '#e5e7eb' }} />
@@ -296,7 +296,7 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
            </button>
         </div>
 
-        <div className="px-6 py-4 overflow-y-auto space-y-6" style={{ paddingBottom: 100 }}>
+        <div className="flex-1 px-6 py-2 overflow-y-auto space-y-6 pb-6">
            {/* Name */}
            <div>
              <label style={{ fontSize: 13, fontWeight: 500, color: textSec, display: 'block', marginBottom: 8 }}>Medicine name *</label>
@@ -454,7 +454,7 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
            </div>
         </div>
 
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px', background: bgModal, borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : '#f3f4f6'}`, zIndex: 10, borderBottomLeftRadius: 'inherit', borderBottomRightRadius: 'inherit' }}>
+        <div style={{ padding: '16px', background: bgModal, borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : '#f3f4f6'}` }}>
            <motion.button
              whileTap={isValid ? { scale: 0.98 } : {}}
              onClick={handleSave} disabled={!isValid || saving}
