@@ -15,19 +15,16 @@ export default function Login() {
   const [otp, setOtp]       = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState<string | null>(null);
-  const [dark, setDark]     = useState(() => {
-    try {
-      return localStorage.getItem('raksh-login-dark') === 'true';
-    } catch {
-      return false;
-    }
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem('raksh-dark-mode') === 'true'; } catch { return false; }
   });
 
   function toggleDark() {
     const next = !dark;
     setDark(next);
     try {
-      localStorage.setItem('raksh-login-dark', String(next));
+      localStorage.setItem('raksh-dark-mode', String(next));
+      document.documentElement.classList.toggle('dark', next);
     } catch {}
   }
 

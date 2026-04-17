@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, HeartPulse, Pill, LogOut, Bell } from 'lucide-react';
+import { Home, HeartPulse, Pill, LogOut, Bell, Moon, Sun, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
+import { GlassFilter } from './GlassEffect';
 import { requestNotificationPermission, notificationsGranted, scheduleAllReminders } from '../lib/notifications';
 
-// Profile is intentionally excluded from the bottom nav — accessible via the top-right avatar
 const NAV = [
   { to: '/home',      icon: Home,       label: 'Home' },
   { to: '/vitals',    icon: HeartPulse, label: 'Vitals' },
@@ -13,17 +13,14 @@ const NAV = [
 ];
 
 export function Shell() {
-  const { user, signOut } = useAppContext();
-  const location = useLocation();
+  const { user, signOut, isDarkMode, toggleDarkMode } = useAppContext();
+  const location  = useLocation();
   const navigate  = useNavigate();
-  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifOpen, setNotifOpen]   = useState(false);
   const [notifGranted, setNotifGranted] = useState(notificationsGranted());
 
-  // Register SW + reschedule reminders on mount
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
     if (notificationsGranted()) scheduleAllReminders();
   }, []);
 
@@ -38,134 +35,198 @@ export function Shell() {
   }
 
   const profile  = user?.profile;
-  const initials = profile?.full_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? 'R';
+  const initials = profile?.full_name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() ?? 'R';
   const currentLabel = [...NAV, { to: '/profile', label: 'Profile' }].find(n => location.pathname.startsWith(n.to))?.label ?? 'Dashboard';
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
+  const handleSignOut = async () => { await signOut(); navigate('/'); };
+
+  // Theme-aware colors
+  const sidebarBg   = isDarkMode ? 'rgba(10,10,14,0.92)'   : 'rgba(255,255,255,0.82)';
+  const sidebarBd   = isDarkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+  const headerBg    = isDarkMode ? 'rgba(12,12,16,0.88)'    : 'rgba(255,255,255,0.85)';
+  const contentBg   = isDarkMode ? '#0C0C10'                : '#F5F4F7';
+  const textPri     = isDarkMode ? '#F3F4F6'                : '#111827';
+  const textSec     = isDarkMode ? 'rgba(255,255,255,0.45)' : '#9CA3AF';
+  const activeBg    = '#C0203E';
+  const hoverBg     = isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const mobileNavBg = isDarkMode ? 'rgba(10,10,14,0.95)'    : 'rgba(255,255,255,0.95)';
 
   return (
-    <div className="flex h-dvh overflow-hidden" style={{ background: '#F7F8FA' }}>
+    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: contentBg }}>
+      <GlassFilter />
 
       {/* ── DESKTOP SIDEBAR ── */}
-      <aside className="hidden lg:flex w-64 flex-col bg-white border-r flex-shrink-0" style={{ borderColor: 'rgba(0,0,0,0.05)' }}>
-        <div className="flex items-center gap-3 px-6 h-16 border-b" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#C0203E' }}>
-            <span className="text-white font-bold text-sm">R</span>
+      <aside
+        className="hidden lg:flex flex-col flex-shrink-0"
+        style={{
+          width: 240,
+          background: sidebarBg,
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderRight: `1px solid ${sidebarBd}`,
+          boxShadow: isDarkMode ? '4px 0 24px rgba(0,0,0,0.4)' : '4px 0 24px rgba(0,0,0,0.04)',
+        }}
+      >
+        {/* Logo */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '0 20px', height: 60,
+          borderBottom: `1px solid ${sidebarBd}`,
+        }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg, #C0203E, #8A101E)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(192,32,62,0.4)' }}>
+            <span style={{ color: 'white', fontWeight: 800, fontSize: 14, fontFamily: 'DM Sans, sans-serif' }}>R</span>
           </div>
           <div>
-            <p className="font-semibold text-gray-900" style={{ fontSize: 14, lineHeight: 1 }}>Raksh</p>
-            <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>Health Manager</p>
+            <p style={{ fontWeight: 700, fontSize: 15, color: textPri, lineHeight: 1, letterSpacing: '-0.02em' }}>Raksh</p>
+            <p style={{ fontSize: 10, color: textSec, marginTop: 2, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Health</p>
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+        {/* Nav links */}
+        <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
           {NAV.map(({ to, icon: Icon, label }) => {
             const active = location.pathname.startsWith(to);
             return (
               <NavLink
-                key={to}
-                to={to}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                  active ? 'text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
-                }`}
-                style={active ? { background: '#C0203E', boxShadow: '0 2px 8px rgba(192,32,62,0.25)' } : {}}
+                key={to} to={to}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px', borderRadius: 12, marginBottom: 2,
+                  textDecoration: 'none', transition: 'all 0.18s ease',
+                  background: active ? activeBg : 'transparent',
+                  color: active ? 'white' : textSec,
+                  boxShadow: active ? '0 4px 16px rgba(192,32,62,0.35)' : 'none',
+                }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = hoverBg; (e.currentTarget as HTMLElement).style.color = textPri; }}
+                onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = textSec; } }}
               >
                 <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
-                <span style={{ fontSize: 14, fontWeight: active ? 500 : 400 }}>{label}</span>
+                <span style={{ fontSize: 14, fontWeight: active ? 600 : 400 }}>{label}</span>
               </NavLink>
             );
           })}
         </nav>
 
-        {/* Desktop bottom user card — clickable → profile */}
-        <div className="px-3 py-4 border-t" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
+        {/* Bottom user area */}
+        <div style={{ padding: '10px', borderTop: `1px solid ${sidebarBd}` }}>
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleDarkMode}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+              padding: '9px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+              background: 'transparent', color: textSec, fontSize: 13, marginBottom: 4,
+              transition: 'all 0.18s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = hoverBg; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+          >
+            {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+            <span>{isDarkMode ? 'Light mode' : 'Dark mode'}</span>
+          </button>
+
+          {/* Profile */}
           <button
             onClick={() => navigate('/profile')}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl w-full hover:bg-gray-50 transition-colors text-left"
-            style={location.pathname.startsWith('/profile') ? { background: 'rgba(192,32,62,0.06)' } : {}}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+              padding: '10px 12px', borderRadius: 14, border: 'none', cursor: 'pointer',
+              background: location.pathname.startsWith('/profile') ? (isDarkMode ? 'rgba(192,32,62,0.15)' : 'rgba(192,32,62,0.07)') : 'transparent',
+              transition: 'all 0.18s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = hoverBg; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = location.pathname.startsWith('/profile') ? (isDarkMode ? 'rgba(192,32,62,0.15)' : 'rgba(192,32,62,0.07)') : 'transparent'; }}
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#C0203E' }}>
-              <span className="text-white font-semibold" style={{ fontSize: 12 }}>{initials}</span>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #C0203E, #8A101E)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(192,32,62,0.35)' }}>
+              <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{initials}</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-gray-900 truncate" style={{ fontSize: 14, fontWeight: 500 }}>{profile?.full_name ?? 'User'}</p>
-              <p className="text-gray-400 truncate" style={{ fontSize: 11 }}>{user?.email}</p>
+            <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: textPri, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile?.full_name ?? 'User'}</p>
+              <p style={{ fontSize: 10, color: textSec, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</p>
             </div>
           </button>
+
           <button
             onClick={handleSignOut}
-            className="mt-1 flex items-center gap-2.5 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors w-full"
-            style={{ fontSize: 13 }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+              padding: '9px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+              background: 'transparent', color: '#EF4444', fontSize: 13, marginTop: 4,
+              transition: 'all 0.18s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
           >
             <LogOut size={14} />
-            Sign out
+            <span>Sign out</span>
           </button>
         </div>
       </aside>
 
-      {/* ── CONTENT ── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* ── CONTENT AREA ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* Top header — avatar navigates to profile */}
-        <header className="flex items-center px-5 lg:px-8 bg-white border-b flex-shrink-0" style={{ height: 56, borderColor: 'rgba(0,0,0,0.05)' }}>
-          <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#C0203E' }}>
-              <span className="text-white font-bold text-xs">R</span>
+        {/* Top Header */}
+        <header style={{
+          display: 'flex', alignItems: 'center', padding: '0 20px', height: 56, flexShrink: 0,
+          background: headerBg, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${sidebarBd}`,
+          boxShadow: isDarkMode ? '0 2px 16px rgba(0,0,0,0.3)' : '0 2px 16px rgba(0,0,0,0.04)',
+        }}>
+          {/* Mobile: logo */}
+          <div className="lg:hidden" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #C0203E, #8A101E)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 8px rgba(192,32,62,0.35)' }}>
+              <span style={{ color: 'white', fontWeight: 800, fontSize: 13 }}>R</span>
             </div>
-            <span className="font-semibold text-gray-900" style={{ fontSize: 14 }}>Raksh</span>
+            <span style={{ fontWeight: 700, fontSize: 15, color: textPri, letterSpacing: '-0.02em' }}>Raksh</span>
           </div>
-          <h1 className="hidden lg:block text-gray-900" style={{ fontSize: 16, fontWeight: 500 }}>{currentLabel}</h1>
+          {/* Desktop: page label */}
+          <h1 className="hidden lg:block" style={{ fontSize: 15, fontWeight: 600, color: textPri }}>{currentLabel}</h1>
 
-          {/* ── Bell notification button ── */}
-          <div style={{ position: 'relative', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+            {/* Dark toggle — mobile */}
+            <button
+              onClick={toggleDarkMode}
+              className="lg:hidden"
+              style={{ width: 36, height: 36, borderRadius: '50%', background: hoverBg, border: `1px solid ${sidebarBd}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: textSec, transition: 'all 0.18s' }}
+            >
+              {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+
+            {/* Bell */}
             <button
               onClick={handleBellClick}
-              title={notifGranted ? 'Notifications' : 'Enable notifications'}
-              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', color: '#6B7280', transition: 'all 0.18s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(192,32,62,0.08)'; e.currentTarget.style.color = '#C0203E'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.color = '#6B7280'; }}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: hoverBg, border: `1px solid ${sidebarBd}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: textSec, position: 'relative', transition: 'all 0.18s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(192,32,62,0.1)'; (e.currentTarget as HTMLElement).style.color = '#C0203E'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = hoverBg; (e.currentTarget as HTMLElement).style.color = textSec; }}
             >
               <Bell size={16} />
-              {!notifGranted && (
-                <span style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#C0203E', border: '1.5px solid white' }} />
-              )}
+              {!notifGranted && <span style={{ position: 'absolute', top: 7, right: 7, width: 7, height: 7, borderRadius: '50%', background: '#C0203E', border: `2px solid ${isDarkMode ? '#0C0C10' : 'white'}` }} />}
             </button>
 
             {/* Notification panel */}
             <AnimatePresence>
               {notifOpen && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                  transition={{ duration: 0.15 }}
-                  style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 280, background: 'white', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', overflow: 'hidden' }}
+                  initial={{ opacity: 0, scale: 0.95, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -8 }} transition={{ duration: 0.15 }}
+                  style={{ position: 'absolute', top: 46, right: 0, zIndex: 100, width: 280, background: isDarkMode ? 'rgba(20,20,28,0.96)' : 'rgba(255,255,255,0.98)', border: `1px solid ${sidebarBd}`, borderRadius: 16, boxShadow: '0 12px 48px rgba(0,0,0,0.18)', overflow: 'hidden', backdropFilter: 'blur(20px)' }}
                 >
-                  <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>Notifications</p>
-                    <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>Medicine reminders are {notifGranted ? '✅ active' : '❌ disabled'}</p>
+                  <div style={{ padding: '14px 16px', borderBottom: `1px solid ${sidebarBd}` }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: textPri }}>Notifications</p>
+                    <p style={{ fontSize: 11, color: textSec, marginTop: 2 }}>Reminders are {notifGranted ? '✅ active' : '❌ off'}</p>
                   </div>
                   <div style={{ padding: '12px 16px' }}>
-                    <p style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.6 }}>
-                      {notifGranted
-                        ? "You'll get reminders based on the times set in each medicine."
-                        : 'Grant permission to receive medicine reminders.'}
+                    <p style={{ fontSize: 12, color: textSec, lineHeight: 1.6 }}>
+                      {notifGranted ? "You'll get reminders at your set medicine times." : 'Grant permission to receive medicine reminders.'}
                     </p>
                     {!notifGranted && (
-                      <button
-                        onClick={async () => { const ok = await requestNotificationPermission(); setNotifGranted(ok); if (ok) scheduleAllReminders(); }}
-                        style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 8, background: '#C0203E', color: 'white', fontWeight: 600, fontSize: 13, border: 'none', cursor: 'pointer' }}
-                      >
+                      <button onClick={async () => { const ok = await requestNotificationPermission(); setNotifGranted(ok); if (ok) scheduleAllReminders(); }}
+                        style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, background: '#C0203E', color: 'white', fontWeight: 600, fontSize: 13, border: 'none', cursor: 'pointer' }}>
                         Enable reminders
                       </button>
                     )}
-                    <button
-                      onClick={() => { navigate('/medicines'); setNotifOpen(false); }}
-                      style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 8, background: 'rgba(0,0,0,0.04)', color: '#374151', fontWeight: 500, fontSize: 13, border: 'none', cursor: 'pointer' }}
-                    >
+                    <button onClick={() => { navigate('/medicines'); setNotifOpen(false); }}
+                      style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 10, background: hoverBg, color: textPri, fontWeight: 500, fontSize: 13, border: 'none', cursor: 'pointer' }}>
                       View medicines
                     </button>
                   </div>
@@ -173,69 +234,83 @@ export function Shell() {
               )}
             </AnimatePresence>
 
-            {/* Clickable avatar — navigates to /profile */}
+            {/* Avatar → profile */}
             <button
               onClick={() => { navigate('/profile'); setNotifOpen(false); }}
-              className="flex items-center gap-2 transition-opacity hover:opacity-80"
-              title="Profile & Settings"
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', transition: 'opacity 0.18s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.75'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
             >
-            <span className="hidden lg:block" style={{ fontSize: 14, color: '#6B7280' }}>{profile?.full_name}</span>
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-transparent hover:ring-[#C0203E]/30 transition-all"
-              style={{ background: '#C0203E' }}
-            >
-              <span className="text-white font-semibold" style={{ fontSize: 12 }}>{initials}</span>
-            </div>
-          </button>
-          </div>{/* end bell+avatar wrapper */}
+              <span className="hidden lg:block" style={{ fontSize: 13, color: textSec }}>{profile?.full_name}</span>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #C0203E, #8A101E)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 10px rgba(192,32,62,0.35)' }}>
+                <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{initials}</span>
+              </div>
+            </button>
+          </div>
         </header>
 
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">
+        {/* Main page content */}
+        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 72 }} className="lg:pb-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="min-h-full"
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              style={{ minHeight: '100%' }}
             >
               <Outlet />
             </motion.div>
           </AnimatePresence>
         </main>
 
-        {/* ── MOBILE BOTTOM NAV (3 tabs, no Profile) ── */}
+        {/* ── MOBILE BOTTOM NAV ── */}
         <nav
-          className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 flex items-stretch"
-          style={{ borderColor: 'rgba(0,0,0,0.05)', height: 64 }}
+          className="lg:hidden"
+          style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+            display: 'flex', alignItems: 'stretch', height: 64,
+            background: mobileNavBg,
+            backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+            borderTop: `1px solid ${sidebarBd}`,
+            boxShadow: isDarkMode ? '0 -4px 24px rgba(0,0,0,0.4)' : '0 -4px 24px rgba(0,0,0,0.06)',
+          }}
         >
           {NAV.map(({ to, icon: Icon, label }) => {
             const active = location.pathname.startsWith(to);
             return (
               <NavLink
-                key={to}
-                to={to}
-                className="flex-1 flex flex-col items-center justify-center"
+                key={to} to={to}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
               >
-                <div
-                  className="flex flex-col items-center justify-center gap-0.5 px-5 py-1.5 rounded-full transition-all"
-                  style={active ? { background: 'rgba(192,32,62,0.10)' } : {}}
-                >
-                  <Icon
-                    size={20}
-                    strokeWidth={active ? 2.3 : 1.7}
-                    style={{ color: active ? '#C0203E' : '#9CA3AF' }}
-                  />
-                  <span style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#C0203E' : '#9CA3AF' }}>
-                    {label}
-                  </span>
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  padding: '6px 20px', borderRadius: 14, transition: 'all 0.18s',
+                  background: active ? (isDarkMode ? 'rgba(192,32,62,0.18)' : 'rgba(192,32,62,0.1)') : 'transparent',
+                }}>
+                  <Icon size={20} strokeWidth={active ? 2.3 : 1.7} style={{ color: active ? '#C0203E' : textSec }} />
+                  <span style={{ fontSize: 10, fontWeight: active ? 700 : 400, color: active ? '#C0203E' : textSec }}>{label}</span>
                 </div>
               </NavLink>
             );
           })}
+          {/* Profile tab */}
+          <NavLink
+            to="/profile"
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
+          >
+            {({ isActive }) => (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                padding: '6px 20px', borderRadius: 14, transition: 'all 0.18s',
+                background: isActive ? (isDarkMode ? 'rgba(192,32,62,0.18)' : 'rgba(192,32,62,0.1)') : 'transparent',
+              }}>
+                <User size={20} strokeWidth={isActive ? 2.3 : 1.7} style={{ color: isActive ? '#C0203E' : textSec }} />
+                <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 400, color: isActive ? '#C0203E' : textSec }}>Profile</span>
+              </div>
+            )}
+          </NavLink>
         </nav>
       </div>
     </div>

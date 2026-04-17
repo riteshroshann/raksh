@@ -19,18 +19,14 @@ export default function Landing() {
   const [email, setEmail]         = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [dark, setDark]           = useState(() => {
-    try {
-      return localStorage.getItem('raksh-landing-dark') === 'true';
-    } catch {
-      return false;
-    }
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem('raksh-dark-mode') === 'true'; } catch { return false; }
   });
 
-  // Apply theme
   useEffect(() => {
     try {
-      localStorage.setItem('raksh-landing-dark', String(dark));
+      localStorage.setItem('raksh-dark-mode', String(dark));
+      document.documentElement.classList.toggle('dark', dark);
     } catch {}
   }, [dark]);
 
