@@ -27,6 +27,69 @@ function formatTime12h(time24: string) {
   return `${hours.toString().padStart(2, '0')}:${m} ${ampm}`;
 }
 
+function CustomTimeInput({ value, onChange, isDarkMode }: { value: string, onChange: (v: string) => void, isDarkMode: boolean }) {
+  const parsed = React.useMemo(() => {
+    if (!value) return { h: '08', m: '00', a: 'AM' };
+    const [h24Str, mStr] = value.split(':');
+    let h24 = parseInt(h24Str, 10);
+    const a = h24 >= 12 ? 'PM' : 'AM';
+    h24 = h24 % 12;
+    if (h24 === 0) h24 = 12;
+    return { h: h24.toString().padStart(2, '0'), m: mStr.padStart(2, '0'), a };
+  }, [value]);
+
+  const [h, setH] = useState(parsed.h);
+  const [m, setM] = useState(parsed.m);
+  const [a, setA] = useState(parsed.a);
+
+  useEffect(() => {
+    setH(parsed.h);
+    setM(parsed.m);
+    setA(parsed.a);
+  }, [parsed.h, parsed.m, parsed.a]);
+
+  const triggerChange = (newH: string, newM: string, newA: string) => {
+    let hVal = parseInt(newH || '12', 10);
+    let mVal = parseInt(newM || '0', 10);
+    if (hVal > 12) hVal = 12;
+    if (hVal < 1) hVal = 12;
+    if (mVal > 59) mVal = 59;
+    
+    let h24 = hVal;
+    if (newA === 'PM' && h24 < 12) h24 += 12;
+    if (newA === 'AM' && h24 === 12) h24 = 0;
+    
+    onChange(`${h24.toString().padStart(2, '0')}:${mVal.toString().padStart(2, '0')}`);
+  }
+
+  const handleHBlur = () => { triggerChange(h, m, a); };
+  const handleMBlur = () => { triggerChange(h, m, a); };
+  const handleAChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setA(e.target.value);
+    triggerChange(h, m, e.target.value);
+  }
+
+  const inputBg  = isDarkMode ? 'rgba(255,255,255,0.04)' : '#f9fafb';
+  const inputBd  = isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+  const textPri  = isDarkMode ? '#f3f4f6' : '#111827';
+  const optBg    = isDarkMode ? '#1e1e24' : '#ffffff';
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', background: inputBg, border: `1.5px solid ${inputBd}`, borderRadius: 10, padding: '4px 12px', width: 'fit-content' }}>
+      <input type="text" inputMode="numeric" maxLength={2} value={h} onChange={(e) => setH(e.target.value.replace(/\D/g, ''))} onBlur={handleHBlur} style={{ width: 20, background: 'transparent', color: textPri, border: 'none', textAlign: 'right', outline: 'none', fontSize: 14, fontWeight: 600, padding: 0, fontFamily: 'inherit' }} />
+      <span style={{ color: textPri, fontWeight: 600, margin: '0 4px', opacity: 0.5 }}>:</span>
+      <input type="text" inputMode="numeric" maxLength={2} value={m} onChange={(e) => setM(e.target.value.replace(/\D/g, ''))} onBlur={handleMBlur} style={{ width: 22, background: 'transparent', color: textPri, border: 'none', textAlign: 'left', outline: 'none', fontSize: 14, fontWeight: 600, padding: 0, fontFamily: 'inherit' }} />
+      
+      <div style={{ width: 1, height: 16, background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', margin: '0 8px' }} />
+
+      <select value={a} onChange={handleAChange} style={{ background: 'transparent', color: textPri, border: 'none', outline: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', appearance: 'none', padding: 0, fontFamily: 'inherit' }}>
+        <option value="AM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>AM</option>
+        <option value="PM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>PM</option>
+      </select>
+    </div>
+  );
+}
+
 export default function Medicines() {
   const { user, isDarkMode } = useAppContext();
   const userId = user?.id;
@@ -263,6 +326,7 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
   const inputBd  = isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
   const pillBg   = isDarkMode ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
   const pillText = isDarkMode ? '#d1d5db' : '#374151';
+  const optBg    = isDarkMode ? '#1e1e24' : '#ffffff';
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
@@ -339,12 +403,12 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
                <div className="relative">
                  <select value={form.frequency} onChange={e => setField('frequency', e.target.value as MedicineFrequency)}
                    style={{ width: '100%', height: 52, padding: '0 16px', borderRadius: 12, border: `1.5px solid ${inputBd}`, background: inputBg, color: textPri, fontSize: 15, outline: 'none', appearance: 'none', boxSizing: 'border-box' }}>
-                   <option value="once">Once daily</option>
-                   <option value="twice">Twice daily</option>
-                   <option value="thrice">Thrice daily</option>
-                   <option value="every_other">Every other day</option>
-                   <option value="weekly">Weekly</option>
-                   <option value="as_needed">As needed</option>
+                   <option value="once" style={{ background: optBg, color: textPri }}>Once daily</option>
+                   <option value="twice" style={{ background: optBg, color: textPri }}>Twice daily</option>
+                   <option value="thrice" style={{ background: optBg, color: textPri }}>Thrice daily</option>
+                   <option value="every_other" style={{ background: optBg, color: textPri }}>Every other day</option>
+                   <option value="weekly" style={{ background: optBg, color: textPri }}>Weekly</option>
+                   <option value="as_needed" style={{ background: optBg, color: textPri }}>As needed</option>
                  </select>
                  <ChevronDown size={18} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: textSec, pointerEvents: 'none' }} />
                </div>
@@ -361,13 +425,11 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
                      <motion.div key={i} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                          <span style={{ color: textSec, fontSize: 13, fontWeight: 500 }}>Dose {i + 1}</span>
-                         <div style={{ position: 'relative' }}>
-                           <input type="time" required value={t} 
-                             onChange={e => { const nt=[...form.times]; nt[i]=e.target.value; setField('times', nt); }} 
-                             onBlur={() => blur('times')}
-                             style={{ background: inputBg, border: `1.5px solid ${inputBd}`, borderRadius: 10, padding: '8px 14px', outline: 'none', fontSize: 14, fontWeight: 600, color: textPri, cursor: 'pointer', appearance: 'none', minWidth: 110, textAlign: 'center', paddingRight: 8 }} 
-                           />
-                         </div>
+                         <CustomTimeInput 
+                           value={t} 
+                           isDarkMode={isDarkMode}
+                           onChange={(v) => { const nt=[...form.times]; nt[i]=v; setField('times', nt); blur('times'); }} 
+                         />
                        </div>
                        <p style={{ color: textMut, fontSize: 11, marginTop: 4, textAlign: 'right' }}>Reminder sent at this time</p>
                      </motion.div>
@@ -435,9 +497,9 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
                <div className="relative">
                  <select value={form.condition} onChange={e => setField('condition', e.target.value)}
                    style={{ width: '100%', height: 52, padding: '0 16px', borderRadius: 12, border: `1.5px solid ${inputBd}`, background: inputBg, color: textPri, fontSize: 15, outline: 'none', appearance: 'none', borderLeftWidth: form.condition ? 4 : 1.5, borderLeftColor: form.condition ? '#C0203E' : inputBd, boxSizing: 'border-box' }}>
-                   <option value="">Select condition</option>
-                   {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                   <option value="Other">Other</option>
+                   <option value="" style={{ background: optBg, color: textPri }}>Select condition</option>
+                   {CONDITIONS.map(c => <option key={c} value={c} style={{ background: optBg, color: textPri }}>{c}</option>)}
+                   <option value="Other" style={{ background: optBg, color: textPri }}>Other</option>
                  </select>
                  <ChevronDown size={18} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: textSec, pointerEvents: 'none' }} />
                </div>
