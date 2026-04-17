@@ -27,94 +27,6 @@ function formatTime12h(time24: string) {
   return `${hours.toString().padStart(2, '0')}:${m} ${ampm}`;
 }
 
-function CustomTimeInput({ value, onChange, isDarkMode }: { value: string, onChange: (v: string) => void, isDarkMode: boolean }) {
-  const parsed = React.useMemo(() => {
-    if (!value) return { h: '08', m: '00', a: 'AM' };
-    const [h24Str, mStr] = value.split(':');
-    let h24 = parseInt(h24Str, 10);
-    const a = h24 >= 12 ? 'PM' : 'AM';
-    h24 = h24 % 12;
-    if (h24 === 0) h24 = 12;
-    return { h: h24.toString().padStart(2, '0'), m: mStr.padStart(2, '0'), a };
-  }, [value]);
-
-  const [h, setH] = useState(parsed.h);
-  const [m, setM] = useState(parsed.m);
-  const [a, setA] = useState(parsed.a);
-
-  useEffect(() => {
-    setH(parsed.h);
-    setM(parsed.m);
-    setA(parsed.a);
-  }, [parsed.h, parsed.m, parsed.a]);
-
-  const triggerChange = (newH: string, newM: string, newA: string) => {
-    let hVal = parseInt(newH || '12', 10);
-    let mVal = parseInt(newM || '0', 10);
-    if (hVal > 12) hVal = 12;
-    if (hVal < 1) hVal = 12;
-    if (mVal > 59) mVal = 59;
-    
-    let h24 = hVal;
-    if (newA === 'PM' && h24 < 12) h24 += 12;
-    if (newA === 'AM' && h24 === 12) h24 = 0;
-    
-    onChange(`${h24.toString().padStart(2, '0')}:${mVal.toString().padStart(2, '0')}`);
-  }
-
-  const handleHBlur = () => { triggerChange(h, m, a); };
-  const handleMBlur = () => { triggerChange(h, m, a); };
-  const handleAChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setA(e.target.value);
-    triggerChange(h, m, e.target.value);
-  }
-
-  const inputBg  = isDarkMode ? 'rgba(255,255,255,0.06)' : '#f3f4f6';
-  const inputBd  = isDarkMode ? 'rgba(255,255,255,0.12)' : '#e5e7eb';
-  const textPri  = isDarkMode ? '#f3f4f6' : '#111827';
-  const optBg    = isDarkMode ? '#1e1e24' : '#ffffff';
-  
-  // Separate states to track focus
-  const [focusH, setFocusH] = useState(false);
-  const [focusM, setFocusM] = useState(false);
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      {/* Time wrapper */}
-      <div style={{ display: 'flex', alignItems: 'center', background: inputBg, border: `1px solid ${inputBd}`, borderRadius: 10, padding: '4px 6px', width: 'fit-content', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-        <input 
-          type="text" inputMode="numeric" maxLength={2} 
-          value={h} 
-          onChange={(e) => setH(e.target.value.replace(/\D/g, ''))} 
-          onBlur={(e) => { handleHBlur(); setFocusH(false); }}
-          onFocus={() => setFocusH(true)}
-          style={{ width: 26, background: focusH ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'white') : 'transparent', color: textPri, border: 'none', textAlign: 'center', outline: 'none', fontSize: 15, fontWeight: 700, padding: '4px 0', borderRadius: 6, transition: 'background 0.2s', fontFamily: 'inherit' }} 
-        />
-        <span style={{ color: textPri, fontWeight: 700, margin: '0 2px', opacity: 0.4 }}>:</span>
-        <input 
-          type="text" inputMode="numeric" maxLength={2} 
-          value={m} 
-          onChange={(e) => setM(e.target.value.replace(/\D/g, ''))} 
-          onBlur={(e) => { handleMBlur(); setFocusM(false); }}
-          onFocus={() => setFocusM(true)}
-          style={{ width: 26, background: focusM ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'white') : 'transparent', color: textPri, border: 'none', textAlign: 'center', outline: 'none', fontSize: 15, fontWeight: 700, padding: '4px 0', borderRadius: 6, transition: 'background 0.2s', fontFamily: 'inherit' }} 
-        />
-      </div>
-      
-      {/* AM/PM Dropdown wrapper */}
-      <div style={{ position: 'relative', background: inputBg, border: `1px solid ${inputBd}`, borderRadius: 10, display: 'flex', alignItems: 'center', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-        <select value={a} onChange={handleAChange} style={{ background: 'transparent', color: textPri, border: 'none', outline: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', appearance: 'none', padding: '8px 24px 8px 12px', fontFamily: 'inherit' }}>
-          <option value="AM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>AM</option>
-          <option value="PM" style={{ background: optBg, color: optBg === '#1e1e24' ? '#f3f4f6' : '#111827' }}>PM</option>
-        </select>
-        <div style={{ position: 'absolute', right: 8, pointerEvents: 'none', opacity: 0.5 }}>
-          <ChevronDown size={14} strokeWidth={3} style={{ color: textPri }} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Medicines() {
   const { user, isDarkMode } = useAppContext();
   const userId = user?.id;
@@ -450,11 +362,13 @@ function AddMedicineSheet({ onClose, onSuccess, userId, addMedicine, isDarkMode 
                      <motion.div key={i} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                          <span style={{ color: textSec, fontSize: 13, fontWeight: 500 }}>Dose {i + 1}</span>
-                         <CustomTimeInput 
-                           value={t} 
-                           isDarkMode={isDarkMode}
-                           onChange={(v) => { const nt=[...form.times]; nt[i]=v; setField('times', nt); blur('times'); }} 
-                         />
+                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                           <input type="time" required value={t} 
+                             onChange={e => { const nt=[...form.times]; nt[i]=e.target.value; setField('times', nt); }} 
+                             onBlur={() => blur('times')}
+                             style={{ background: isDarkMode ? 'rgba(255,255,255,0.06)' : '#f3f4f6', border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`, borderRadius: 10, padding: '8px 12px', outline: 'none', fontSize: 15, fontWeight: 600, color: textPri, cursor: 'pointer', appearance: 'none', minWidth: 110, textAlign: 'center', fontFamily: 'inherit', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }} 
+                           />
+                         </div>
                        </div>
                        <p style={{ color: textMut, fontSize: 11, marginTop: 4, textAlign: 'right' }}>Reminder sent at this time</p>
                      </motion.div>
